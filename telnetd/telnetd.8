@@ -137,10 +137,14 @@ is provided, then the
 program will provide the necessary user
 verification.
 .It off
-This disables the authentication code.
-All user verification will happen through the
+This disables automatic login.
+User verification will happen through the
 .Xr login 1
-program.
+program.  For MIT Athena, this option also means
+that Kerberos-authenticated unencrypted connections
+will be closed before
+.Xr login 1
+can prompt for a password.
 .El
 .It Fl B
 Specifies bftp server mode.  In this mode,
