@@ -73,7 +73,7 @@
 #  endif
 # endif
 #endif
-#if defined(NO_CC_T) || !defined(USE_TERMIO)
+#if (defined(NO_CC_T) || !defined(USE_TERMIO)) && !defined(linux)
 # if !defined(USE_TERMIO)
 typedef char cc_t;
 # else
@@ -144,6 +144,17 @@ extern int
 #endif	/* defined(TN3270) */
     termdata,		/* Print out terminal data flow */
 #endif	/* defined(unix) */
+#if	defined(AUTHENTICATION)
+    auth_done,
+#endif
+#if	defined(KRB4)
+    krb4_accepted,
+#endif
+    dontfallback,     /* do we fallback on non-auth/enc connection */
+    donttryauthenc,   /* do we try auth/enc by default? */
+#ifdef ENCRYPTION
+    user_wants_encryption,
+#endif
     debug;			/* Debug level */
 
 extern cc_t escape;	/* Escape to command mode */

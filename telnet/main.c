@@ -82,7 +82,7 @@ usage()
 	    prompt,
 #ifdef	AUTHENTICATION
 	    " [-8] [-E] [-K] [-L] [-X atype] [-a] [-d] [-e char] [-k realm]",
-	    "\n\t[-l user] [-safe] [-f/-F] [-n tracefile] ",
+	    "\n\t[-l user] [-u/-N] [-safe] [-f/-F] [-n tracefile] ",
 #else
 	    " [-8] [-E] [-L] [-a] [-d] [-e char] [-l user] [-n tracefile]",
 	    "\n\t",
@@ -142,7 +142,7 @@ main(argc, argv)
 	rlogin = (strncmp(prompt, "rlog", 4) == 0) ? '~' : _POSIX_VDISABLE;
 	autologin = -1;
 
-	while ((ch = getopt(argc, argv, "8EKLS:X:acde:fFk:l:n:rs:t:x")) != EOF) {
+	while ((ch = getopt(argc, argv, "8EKLNS:X:acde:fFk:l:n:rs:t:ux")) != EOF) {
 		switch(ch) {
 		case '8':
 			eight = 3;	/* binary output and input */
@@ -157,6 +157,9 @@ main(argc, argv)
 			break;
 		case 'L':
 			eight |= 2;	/* binary output only */
+			break;
+		case 'N':		/* don't fallback for auth/enc */
+			dontfallback=1;
 			break;
 		case 'S':
 		    {
@@ -265,13 +268,18 @@ main(argc, argv)
 #ifdef	ENCRYPTION
 			  encrypt_auto(1);
 			  decrypt_auto(1);
+			  user_wants_encryption=1;
 #endif
 			  autologin = 1;
+			  dontfallback = 1;
 #if defined(AUTHENTICATION) && defined(KRB5) && defined(FORWARD)
 			  forward_flags |= OPTS_FORWARD_CREDS;
 			  forward_flags |= OPTS_FORWARDABLE_CREDS;
 #endif
 			} else usage();
+#ifdef STARTUP_MESSAGE_SAFE
+			fputs(STARTUP_MESSAGE_SAFE, stderr);
+#endif
 			break;
 		case 't':
 #if defined(TN3270) && defined(unix)
@@ -283,10 +291,14 @@ main(argc, argv)
 								prompt);
 #endif
 			break;
+		case 'u':
+			donttryauthenc=1;
+			break;
 		case 'x':
 #ifdef	ENCRYPTION
 			encrypt_auto(1);
 			decrypt_auto(1);
+			user_wants_encryption=1;
 #else
 			fprintf(stderr,
 			    "%s: Warning: -x ignored, no ENCRYPT support.\n",
@@ -299,8 +311,38 @@ main(argc, argv)
 			/* NOTREACHED */
 		}
 	}
+
+	/* determine whether to autologin or not */
 	if (autologin == -1)
-		autologin = (rlogin == _POSIX_VDISABLE) ? 0 : 1;
+	  {
+	    /* if we mimic rlogin, just do it */
+	    if (rlogin != _POSIX_VDISABLE) autologin=1;
+	    else
+	      {
+		if (donttryauthenc)
+		  {
+		    autologin=0;
+#ifdef	ENCRYPTION
+		    encrypt_auto(0);
+		    decrypt_auto(0);
+		    user_wants_encryption=0;
+#endif
+		  }
+		else
+		  {
+		    /* by default, try auth and encrypt */
+		    autologin=1;
+#ifdef	ENCRYPTION
+		    encrypt_auto(1);
+		    decrypt_auto(1);
+		    user_wants_encryption=1;
+#endif
+#ifdef STARTUP_MESSAGE_DEFAULT
+		    fputs(STARTUP_MESSAGE_DEFAULT, stderr);
+#endif
+		  }
+	      }
+	  }
 
 	argc -= optind;
 	argv += optind;

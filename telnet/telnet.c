@@ -104,6 +104,11 @@ int
 	donelclchars,	/* the user has set "localchars" */
 	donebinarytoggle,	/* the user has put us in binary */
 	dontlecho,	/* do we suppress local echoing right now? */
+	dontfallback=0, /* do we fallback on non-auth/enc connection */
+	donttryauthenc=0, /* do we try auth/enc by default? */
+#ifdef ENCRYPTION
+	user_wants_encryption=0,
+#endif
 	globalmode;
 
 char *prompt = 0;
@@ -595,6 +600,32 @@ dontoption(option)
 		telopt_environ = TELOPT_OLD_ENVIRON;
 		break;
 #endif
+		/*
+		 *  We requested authentication or encryption.  Server refused.
+		 *  Therefore, exit on client end.
+		 */
+#ifdef AUTHENTICATION
+	    case TELOPT_AUTHENTICATION:
+		if (dontfallback)
+		  ExitStringWithoutFlushing
+		    ("telnet: Server does not support authentication.\n", 1);
+
+		fputs("[ Warning: Server does not support authentication. ]\r\n",
+		      stderr);
+		break;
+#endif /* AUTHENTICATION */
+#ifdef ENCRYPTION
+	    case TELOPT_ENCRYPT:
+		if (user_wants_encryption)
+		  {
+		    if (dontfallback)
+		      ExitStringWithoutFlushing
+			("telnet: Server does not support encryption.\n", 1);
+		    fputs("[ Warning: Server does not support encryption. ]\r\n",
+			  stderr);
+		  }
+		break;
+#endif /* ENCRYPTION */
 	    }
 	    /* we always accept a DONT */
 	    set_my_want_state_wont(option);
@@ -989,11 +1020,31 @@ suboption()
 			if (my_want_state_is_wont(TELOPT_AUTHENTICATION))
 				return;
 			auth_send(subpointer, SB_LEN());
+			if (!auth_done)
+			  {
+			    if (dontfallback)
+			      ExitStringWithoutFlushing
+				("telnet: Could not authenticate.\n", 1);
+			    else
+			      fputs("[ Warning: Could not authenticate. ]\r\n",
+				    stderr);
+			  }
 			break;
 		case TELQUAL_REPLY:
 			if (my_want_state_is_wont(TELOPT_AUTHENTICATION))
 				return;
 			auth_reply(subpointer, SB_LEN());
+#ifdef KRB4
+			if (!krb4_accepted)
+			  {
+			    if (dontfallback)
+			      ExitStringWithoutFlushing
+				("telnet: Authentication failed.\n", 1);
+			    else
+			      fputs("[ Warning: Authentication failed. ]\r\n",
+				    stderr);
+			  }
+#endif
 			break;
 		case TELQUAL_NAME:
 			if (my_want_state_is_dont(TELOPT_AUTHENTICATION))

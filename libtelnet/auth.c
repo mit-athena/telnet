@@ -97,6 +97,7 @@ extern rsaencpwd_printsub();
 #endif
 
 int auth_debug_mode = 0;
+int auth_done = 0;
 static 	char	*Name = "Noname";
 static	int	Server = 0;
 static	Authenticator	*authenticated = 0;
@@ -212,7 +213,8 @@ auth_init(name, server)
 	Name = name;
 
 	i_support = 0;
-	authenticated = 0;
+	authenticated = (Authenticator *)0;
+	auth_done = 0;
 	authenticating = 0;
 	while (ap->type) {
 		if (!ap->init || (*ap->init)(ap, server)) {
@@ -437,6 +439,7 @@ auth_send(data, cnt)
 						printf(">>>%s: Using type %d\r\n",
 							Name, *auth_send_data);
 					auth_send_data += 2;
+					auth_done=1;
 					return;
 				}
 			}

@@ -937,3 +937,28 @@ ExitString(string, returnCode)
     fwrite(string, 1, strlen(string), stderr);
     exit(returnCode);
 }
+
+/*
+ * Exit without flushing incoming data to the terminal.
+ * This is useful if exit is desired before the initial
+ * option negotiation is finished.  ExitString() prints garbage
+ * which is probably the remaining incoming option stuff.
+ */
+
+    void
+ExitWithoutFlushing(returnCode)
+    int returnCode;
+{
+  setcommandmode();
+  exit(returnCode);
+}
+
+    void
+ExitStringWithoutFlushing(string, returnCode)
+    char *string;
+    int returnCode;
+{
+    setcommandmode();
+    fwrite(string, 1, strlen(string), stderr);
+    exit(returnCode);
+}
