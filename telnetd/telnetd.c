@@ -43,7 +43,6 @@ static char sccsid[] = "@(#)telnetd.c	8.1 (Berkeley) 6/4/93";
 
 #include "telnetd.h"
 #include "pathnames.h"
-#include <signal.h>
 
 #if	defined(_SC_CRAY_SECURE_SYS) && !defined(SCM_SECURITY)
 /*
@@ -687,33 +686,33 @@ getterminaltype(name)
 	static unsigned char sb[] =
 			{ IAC, SB, TELOPT_TSPEED, TELQUAL_SEND, IAC, SE };
 
-	bcopy(sb, nfrontp, sizeof sb);
+	memcpy(nfrontp, sb, sizeof sb);
 	nfrontp += sizeof sb;
     }
     if (his_state_is_will(TELOPT_XDISPLOC)) {
 	static unsigned char sb[] =
 			{ IAC, SB, TELOPT_XDISPLOC, TELQUAL_SEND, IAC, SE };
 
-	bcopy(sb, nfrontp, sizeof sb);
+	memcpy(nfrontp, sb, sizeof sb);
 	nfrontp += sizeof sb;
     }
     if (his_state_is_will(TELOPT_NEW_ENVIRON)) {
 	static unsigned char sb[] =
 			{ IAC, SB, TELOPT_NEW_ENVIRON, TELQUAL_SEND, IAC, SE };
 
-	bcopy(sb, nfrontp, sizeof sb);
+	memcpy(nfrontp, sb, sizeof sb);
 	nfrontp += sizeof sb;
     }
     else if (his_state_is_will(TELOPT_OLD_ENVIRON)) {
 	static unsigned char sb[] =
 			{ IAC, SB, TELOPT_OLD_ENVIRON, TELQUAL_SEND, IAC, SE };
 
-	bcopy(sb, nfrontp, sizeof sb);
+	memcpy(nfrontp, sb, sizeof sb);
 	nfrontp += sizeof sb;
     }
     if (his_state_is_will(TELOPT_TTYPE)) {
 
-	bcopy(ttytype_sbbuf, nfrontp, sizeof ttytype_sbbuf);
+	memcpy(nfrontp, ttytype_sbbuf, sizeof ttytype_sbbuf);
 	nfrontp += sizeof ttytype_sbbuf;
     }
     if (his_state_is_will(TELOPT_TSPEED)) {
@@ -787,7 +786,7 @@ _gettermname()
     if (his_state_is_wont(TELOPT_TTYPE))
 	return;
     settimer(baseline);
-    bcopy(ttytype_sbbuf, nfrontp, sizeof ttytype_sbbuf);
+    memcpy(nfrontp, ttytype_sbbuf, sizeof ttytype_sbbuf);
     nfrontp += sizeof ttytype_sbbuf;
     while (sequenceIs(ttypesubopt, baseline))
 	ttloop();
