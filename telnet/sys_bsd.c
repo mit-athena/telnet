@@ -399,6 +399,7 @@ TerminalNewMode(f)
     int onoff;
     int old;
     cc_t esc;
+    sigset_t set;
 
     globalmode = f&~MODE_FORCE;
     if (prevmode == f)
@@ -669,7 +670,9 @@ TerminalNewMode(f)
 #endif
 #ifdef	SIGTSTP
 	(void) signal(SIGTSTP, SIG_DFL);
-	(void) sigsetmask(sigblock(0) & ~(1<<(SIGTSTP-1)));
+	sigemptyset(&set);
+	sigaddset(&set, SIGTSTP);
+	sigprocmask(SIG_UNBLOCK, &set, NULL);
 #endif	/* SIGTSTP */
 #ifndef USE_TERMIO
 	ltc = oltc;
