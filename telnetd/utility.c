@@ -223,7 +223,7 @@ netclear()
 		next = nextitem(next);
 	    } while (wewant(next) && (nfrontp > next));
 	    length = next-thisitem;
-	    bcopy(thisitem, good, length);
+	    memcpy(good, thisitem, length);
 	    good += length;
 	    thisitem = next;
 	} else {
@@ -330,7 +330,7 @@ writenet(ptr, len)
 		netflush();
 	}
 
-	bcopy(ptr, nfrontp, len);
+	memcpy(nfrontp, ptr, len);
 	nfrontp += len;
 
 }  /* end of writenet */

@@ -46,7 +46,7 @@ net_write(str, len)
 	int len;
 {
 	if (nfrontp + len < netobuf + BUFSIZ) {
-		bcopy((void *)str, (void *)nfrontp, len);
+		memcpy(nfrontp, str, len);
 		nfrontp += len;
 		return(len);
 	}
