@@ -134,7 +134,10 @@ AthenaUserOk(kdata, username)
 
   if (!DidStartUser)
     {
-      code=ALsetUser(&AthenaLoginSession, username, ALisRemoteSession);
+      code=ALinitAL(&AthenaLoginSession, ALisRemoteSession);
+      if (code) com_err("telnetd", code, "(%s)",
+			ALcontext(&AthenaLoginSession));
+      code=ALsetUser(&AthenaLoginSession, username);
       if (code) com_err("telnetd", code, "(%s)",
 			ALcontext(&AthenaLoginSession));
       if (ALisError(code)) return 1;
