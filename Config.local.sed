@@ -1,17 +1,17 @@
 athena_solaris:
 	make -f Makefile.generic ${WHAT} \
 		LIBS="-ltermlib ../libtelnet/libtelnet.a \
-		  ${AUTH_LIB} -lsocket -lnsl -lbsd" \
+		  ${AUTH_LIB} -lsocket -lnsl" \
 		LIBPATH="/usr/ccs/lib/libtermlib.a ../libtelnet/libtelnet.a \
 			${AUTH_LIBPATH} /usr/lib/libsocket.a \
-			/usr/lib/libnsl.a /usr/athena/lib/libbsd.a" \
+			/usr/lib/libnsl.a" \
 		DEST=${DESTDIR}/usr/athena/bin \
 		DEFINES="-DFILIO_H -DUSE_TERMIO -DKLUDGELINEMODE \
 			-DSTREAMS -DSTREAMSPTY -DDIAGNOSTICS -DSOLARIS \
 			-DENV_HACK -DOLD_ENVIRON -DUTMPX \
 	-DDEFAULT_IM='\"\r\nMIT Athena (%h/Solaris) (%t)\r\n\r\r\n\r\"' \
 			-DLOGIN_ARGS ${AUTH_DEF}" \
-		INCLUDES="-I..  ${AUTH_INC} -I/usr/ucbinclude" \
+		INCLUDES="-I..  ${AUTH_INC}" \
 		LIB_OBJ="getent.o strerror.o setenv.o herror.o" \
 		LIB_SRC="getent.c strerror.c setenv.c herror.c" \
 		AR=ar ARFLAGS=cq RANLIB=NONE \
