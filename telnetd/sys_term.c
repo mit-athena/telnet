@@ -1523,7 +1523,8 @@ start_login(host, autologin, name)
 
 	bzero(&utmpx, sizeof(utmpx));
 	SCPYN(utmpx.ut_user, ".telnet");
-	SCPYN(utmpx.ut_line, line + sizeof("/dev/") - 1);
+	/* dont do this for solaris. */
+	SCPYN(utmpx.ut_line, line /* + sizeof("/dev/") - 1 */ );
 	utmpx.ut_pid = pid;
 	utmpx.ut_id[0] = 't';
 	utmpx.ut_id[1] = 'n';
@@ -1557,7 +1558,7 @@ start_login(host, autologin, name)
 	{
 		argv = addarg(argv, "-h");
 		argv = addarg(argv, host);
-#ifdef	SOLARIS
+#if defined(SOLARIS) && ! defined(ATHENA_LOGIN)
 		/*
 		 * SVR4 version of -h takes TERM= as second arg, or -
 		 */
@@ -1701,7 +1702,8 @@ start_login(host, autologin, name)
 		close(pty);
 #endif
 	closelog();
-        if (autologin) path_login = _PATH_LOGIN;
+        if (auth_level >= 0 && autologin == AUTH_VALID)
+		path_login = _PATH_LOGIN;
         else path_login = "/bin/login";
 	if (auth_debug_mode) {
 		char **debug_argv;
@@ -1711,8 +1713,22 @@ start_login(host, autologin, name)
 			printf(" %s", *debug_argv);
 		printf("\n");
 	}
+#if defined(AUTHENTICATION) && defined(ENCRYPTION)
+	/* if client tries authentication and server wants password anyway */
+	if (autologin && auth_level < 0) {
+		if (decrypt_input)
+			printf("What you type is protected by encryption.\r\n");
+		else {
+			printf("What you type is not protected.\r\n\r\n");
+# ifdef ATHENA_LOGIN
+			printf("You must use the encryption option.\r\n\r\n");
+			AthenaLoginCleanup();
+			exit(1);
+# endif /* ATHENA_LOGIN */
+		}
+	}
+#endif /* defined(AUTHENTICATION) && defined(ENCRYPTION) */
         execv(path_login, argv);
-
 	syslog(LOG_ERR, "%s: %m\n", path_login);
 	fatalperror(net, path_login);
 	/*NOTREACHED*/
