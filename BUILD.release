@@ -1,0 +1,7 @@
+cd AL; /build/bin/xmkmf .
+cd AL;makea
+
+cd telnet; /build/bin/xmkmf .
+cd telnet; make
+cd telnet; make install
+cd telnet; make install.man
