@@ -35,7 +35,6 @@
 #	<target>:
 #		make -f Makefile.generic ${WHAT} \
 #			<definitions>
-
 # DEFINES=
 #
 #    Variables to be defined when actually compiling the source.  Defined
@@ -244,6 +243,7 @@ all:
 	@echo " hpux8.0"
 	@echo " next1.0"
 	@echo " convex"
+	@echo " osf1 osf1.auth"
 
 4.4bsd:
 	make -f Makefile.generic ${WHAT} \
@@ -261,6 +261,24 @@ all:
 		AR=ar ARFLAGS=cq RANLIB=ranlib \
 		LIBEXEC=${DESTDIR}/usr/libexec \
 		CC="${CC}" LCCFLAGS="-O"
+
+osf1:
+	make -f Makefile.generic ${WHAT} \
+		LIBS="-lutil -ltermcap ../libtelnet/libtelnet.a ${AUTH_LIB}" \
+		LIBPATH="/usr/lib/libc.a /usr/lib/libtermcap.a \
+				../libtelnet/libtelnet.a ${AUTH_LIBPATH}" \
+		DEST=${DESTDIR}/usr/athena/bin \
+		DEFINES=${ODEFS}"-DTERMCAP -DKLUDGELINEMODE \
+		    -DDEFAULT_IM='\"\r\nOSF/1 (%h) (%t)\r\n\r\r\n\r\"' \
+			-DUSE_TERMIO -DDIAGNOSTICS -DENV_HACK \
+			-DOLD_ENVIRON ${AUTH_DEF}" \
+		INCLUDES="-I.." \
+		LIB_OBJ="getent.o" \
+		LIB_SRC="getent.c" \
+		AR=ar ARFLAGS=cq RANLIB=ranlib \
+		LIBEXEC=${DESTDIR}/etc/athena \
+		CC="${CC}" LCCFLAGS="-O -std1 -Olimit 602 -Dunix"
+# The -Dunix is for the -std1
 
 4.3reno:
 	make -f Makefile.generic ${WHAT} \
@@ -280,6 +298,12 @@ all:
 		LIBEXEC=${DESTDIR}/usr/libexec \
 		CC="${CC}" LCCFLAGS="-O"
 
+
+osf1.auth:
+	make -f ../Config.generic `basename $@ .auth` WHAT=${WHAT} \
+		AUTH_LIB="-L/usr/athena/lib -lkrb -ldes" \
+		AUTH_LIBPATH="/usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
+		AUTH_DEF="-I/usr/athena/include -DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION"
 
 4.4bsd.auth 4.3reno.auth:
 	make -f ../Config.generic `basename $@ .auth` WHAT=${WHAT} \
