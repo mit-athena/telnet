@@ -80,7 +80,7 @@ static char sccsid[] = "@(#)commands.c	8.1 (Berkeley) 6/6/93";
 
 #ifndef       MAXHOSTNAMELEN
 #define       MAXHOSTNAMELEN 64
-#endif        MAXHOSTNAMELEN
+#endif        /* MAXHOSTNAMELEN */
 
 #if	defined(IPPROTO_IP) && defined(IP_TOS)
 int tos = -1;
@@ -1405,7 +1405,7 @@ shell(argc, argv)
 	     * Fire up the shell in the child.
 	     */
 	    register char *shellp, *shellname;
-#if !defined(SOLARIS) && !defined(_AIX)
+#if !defined(__STDC__) && !defined(_AIX) && !defined(SOLARIS)
 	    extern char *rindex();
 #endif
 
@@ -1694,7 +1694,7 @@ env_init()
 	extern char **environ;
 	register char **epp, *cp;
 	register struct env_lst *ep;
-#if !defined(SOLARIS) && !defined(_AIX)
+#if !defined(__STDC__) && !defined(_AIX) && !defined(SOLARIS)
 	extern char *index();
 #endif
 
@@ -1961,6 +1961,12 @@ auth_cmd(argc, argv)
 {
     struct authlist *c;
 
+    if (argc < 2) {
+      fprintf(stderr,
+          "Need an argument to 'auth' command.  'auth ?' for help.\n");
+      return 0;
+    }
+
     c = (struct authlist *)
 		genget(argv[1], (char **) AuthList, sizeof(struct authlist));
     if (c == 0) {
@@ -2060,6 +2066,12 @@ encrypt_cmd(argc, argv)
     char *argv[];
 {
     struct encryptlist *c;
+
+    if (argc < 2) {
+	fprintf(stderr,
+	    "Need an argument to 'encrypt' command.  'encrypt ?' for help.\n");
+	return 0;
+    }
 
     c = (struct encryptlist *)
 		genget(argv[1], (char **) EncryptList, sizeof(struct encryptlist));
@@ -2296,6 +2308,11 @@ tn(argc, argv)
 	srp = 0;
 	temp = sourceroute(hostp, &srp, &srlen);
 	if (temp == 0) {
+#ifdef ultrix
+	    extern int h_errno;
+
+	    if (!h_errno) h_errno = HOST_NOT_FOUND;
+#endif /* ultrix */
 	    herror(srp);
 	    setuid(getuid());
 	    return 0;
@@ -2329,6 +2346,11 @@ tn(argc, argv)
 		_hostname[sizeof(_hostname)-1] = '\0';
 		hostname = _hostname;
 	    } else {
+#ifdef ultrix
+		extern int h_errno;
+
+		if (!h_errno) h_errno = HOST_NOT_FOUND;
+#endif /* ultrix */
 		herror(hostp);
 	        setuid(getuid());
 		return 0;

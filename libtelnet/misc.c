@@ -43,7 +43,7 @@ char *UserNameRequested = 0;
 int ConnectedCount = 0;
 #ifdef ATHENA_LOGIN
 ALsessionStruct AthenaLoginSession;
-#endif ATHENA_LOGIN
+#endif /* ATHENA_LOGIN */
 
 	void
 auth_encrypt_init(local, remote, name, server)
