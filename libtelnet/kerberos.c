@@ -117,25 +117,22 @@ AthenaUserOk(kdata, username)
      AUTH_DAT *kdata;
      char *username;
 {
-  long code1, code2;
+  long code;
 
   if (!DidStartUser)
     {
-      code1=ALsetUser(&AthenaLoginSession, username, ALisRemoteSession);
-      if (ALisError(code1))
-	{
-	  com_err("telnetd", code1, "ALsetUser (%s)",
-		  ALcontext(&AthenaLoginSession));
-	  return 1;
-	}
+      code=ALsetUser(&AthenaLoginSession, username, ALisRemoteSession);
+      if (code) com_err("telnetd", code, "(%s)",
+			ALcontext(&AthenaLoginSession));
+      if (ALisError(code)) return 1;
 
-      code2=ALstart(&AthenaLoginSession);
-      if (ALisError(code2))
-	{
-	  com_err("telnetd", code2, "ALstart (%s)",
-		  ALcontext(&AthenaLoginSession));
-	  return 1;
-	}
+      code=ALstart(&AthenaLoginSession);
+      if (code) com_err("telnetd", code, "(%s)",
+			ALcontext(&AthenaLoginSession));
+      if (ALisError(code)) return 1;
+
+      if (ALisTrue(&AthenaLoginSession, ALdidCreateHomedir))
+	setenv("TMPHOME", "", 1);
     }
 
   DidStartUser=1;
