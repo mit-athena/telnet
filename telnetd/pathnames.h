@@ -33,7 +33,7 @@
  *	@(#)pathnames.h	8.1 (Berkeley) 6/4/93
  */
 
-#ifdef ATHENA_LOGIN
+#if defined(ATHENA_LOGIN) && !defined(hpux)
 # define	_PATH_LOGIN	"/usr/athena/etc/login.krb"
 #endif /* ATHENA_LOGIN */
 
