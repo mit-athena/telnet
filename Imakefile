@@ -1,14 +1,16 @@
 /* 
  * Imakefile for Athenized Kerberized telnet
  *
- * $Author: brlewis $
- * $Id: Imakefile,v 1.2 1994-05-12 15:55:59 brlewis Exp $
+ * $Author: cfields $
+ * $Id: Imakefile,v 1.3 1994-07-07 14:07:37 cfields Exp $
  *
  * Copyright 1994 by the Massachusetts Institute of Technology.
  * For copying and distribution information, see the file
  * "mit-copyright.h".
  *
  */
+
+#define ISUBDIRS tmac
 
 #ifdef ultrix
 PLATFORM=athena_ultrix.auth
@@ -20,6 +22,10 @@ PLATFORM=athena_aix.auth
 
 #ifdef SOLARIS
 PLATFORM=athena_solaris.auth
+#endif
+
+#ifdef hpux
+PLATFORM=athena_hpux.auth
 #endif
 
 all:: Config.local
