@@ -1,11 +1,11 @@
 athena_solaris:
 	make -f Makefile.generic ${WHAT} \
 		LIBS="-ltermlib ../libtelnet/libtelnet.a \
-			/usr/athena/lib/libresolv.a -lsocket -lnsl -lc \
-			/usr/ucblib/libucb.a -lelf -ldl ${AUTH_LIB}" \
+		  ${AUTH_LIB} /usr/athena/lib/libresolv.a -lsocket -lnsl \
+			/usr/ucblib/libucb.a" \
 		LIBPATH="/usr/ccs/lib/libtermlib.a ../libtelnet/libtelnet.a \
-			/usr/lib/libc.a /usr/ucblib/libucb.a \
-			/usr/lib/libsocket.a /usr/lib/libnsl.a ${AUTH_LIBPATH}" \
+			${AUTH_LIBPATH} /usr/lib/libsocket.a \
+			/usr/lib/libnsl.a /usr/ucblib/libucb.a" \
 		DEST=${DESTDIR}/usr/athena/bin \
 		DEFINES="-DFILIO_H -DUSE_TERMIO -DKLUDGELINEMODE \
 			-DSTREAMS -DSTREAMSPTY -DDIAGNOSTICS -DSOLARIS \
