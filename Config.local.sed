@@ -97,3 +97,83 @@ athena_hpux.auth:
 		AUTH_LIB="-L../../AL -L/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
 		AUTH_LIBPATH="../../AL/libAL.a /usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
+
+athena_linux:
+	make -f Makefile.generic ${WHAT} \
+		LIBS="-ltermcap ../libtelnet/libtelnet.a -lbsd \
+			${AUTH_LIB}" \
+		LIBPATH="/usr/lib/libc.a /usr/lib/libtermcap.a \
+			../libtelnet/libtelnet.a /usr/lib/libbsd.a \
+			${AUTH_LIBPATH}" \
+		DEST=${DESTDIR}/usr/athena/bin \
+		DEFINES=${ODEFS}" -DTERMCAP -DUSE_TERMIO \
+	-DDEFAULT_IM='\"\r\nMIT SIPB Linux-Athena (%h) (%t)\r\n\r\n\"' \
+			-DKLUDGELINEMODE -DDIAGNOSTICS -DENV_HACK \
+			-DOLD_ENVIRON ${AUTH_DEF}" \
+		INCLUDES="-I.. -I../.. ${AUTH_INC} -I/usr/ucbinclude" \
+		LIB_OBJ="getent.o" \
+		LIB_SRC="getent.c" \
+		AR=ar ARFLAGS=cq RANLIB=ranlib \
+		LIBEXEC=${DESTDIR}/etc/athena \
+		CC="${CC}" LCCFLAGS="ATHENA_LCCFLAGS -g"
+
+athena_linux.auth:
+	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
+		AUTH_LIB="-L../../AL -L/usr/athena/lib -lAL -lkrb -ldes \
+			-lcom_err -lhesiod" \
+		AUTH_LIBPATH="../../AL/libAL.a /usr/athena/lib/libkrb.a \
+			/usr/athena/lib/libdes.a" \
+		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 \
+			-DDES_ENCRYPTION -DATHENA_LOGIN"
+
+athena_osf1:
+	make -f Makefile.generic ${WHAT} \
+		LIBS="-lutil -ltermcap ../libtelnet/libtelnet.a ${AUTH_LIB}" \
+		LIBPATH="/usr/lib/libc.a /usr/lib/libtermcap.a \
+				../libtelnet/libtelnet.a ${AUTH_LIBPATH}" \
+		DEST=${DESTDIR}/usr/athena/bin \
+		DEFINES=${ODEFS}"-DTERMCAP -DKLUDGELINEMODE \
+		    -DDEFAULT_IM='\"\r\nMIT Athena (%h/OSF/1) (%t)\r\n\r\r\n\r\"' \
+			-DUSE_TERMIO -DDIAGNOSTICS -DENV_HACK \
+			-DOLD_ENVIRON ${AUTH_DEF}" \
+		INCLUDES="-I.. -I../.. ${AUTH_INC}"\
+		LIB_OBJ="getent.o" \
+		LIB_SRC="getent.c" \
+		AR=ar ARFLAGS=cq RANLIB=ranlib \
+		LIBEXEC=${DESTDIR}/etc/athena \
+		CC="${CC}" LCCFLAGS="-O -std1 -Olimit 602 -Dunix"
+# The -Dunix is for the -std1
+
+athena_osf1.auth:
+	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
+		AUTH_LIB="-L../../AL -L/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
+		AUTH_LIBPATH="/usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
+		AUTH_INC=-I/usr/athena/include \
+		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
+
+
+athena_irix:
+	make -f Makefile.generic ${WHAT} \
+		LIBS="-ltermlib ../libtelnet/libtelnet.a ${AUTH_LIB}" \
+		LIBPATH="/usr/lib/libtermlib.a \
+			../libtelnet/libtelnet.a ${AUTH_LIBPATH}" \
+		DEST=${DESTDIR}/usr/athena/bin \
+		DEFINES=${ODEFS}"-Dvfork=fork -DUSE_TERMIO -DUTMPX \
+		-DKLUDGELINEMODE -DSTREAMS -DDIAGNOSTICS \
+		-DENV_HACK -DOLD_ENVIRON \
+		    -DDEFAULT_IM='\"\r\nMIT Athena (%h/Irix) (%t)\r\n\r\r\n\r\"' \
+			${AUTH_DEF}" \
+		INCLUDES="-I.. -I../.. ${AUTH_INC}" \
+		LIB_OBJ="getent.o setenv.o" \
+		LIB_SRC="getent.c setenv.c" \
+		AR=ar ARFLAGS=cq RANLIB=NONE \
+		LIBEXEC=${DESTDIR}/etc/athena \
+		CC="${CC}" LCCFLAGS="-O2  -DSYSV -DPOSIX -DPOSIX_FLOCK"
+
+
+athena_irix.auth:
+	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
+		AUTH_LIB="-L../../AL -L/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
+		AUTH_LIBPATH="../../AL/libAL.a /usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
+		AUTH_INC=-I/usr/athena/include \
+		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
