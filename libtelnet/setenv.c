@@ -47,7 +47,7 @@ static char sccsid2[] = "@(#)getenv.c	8.1 (Berkeley) 6/4/93";
 #ifndef	__P
 #define __P(x)	()
 #endif
-char *__findenv __P((const char *, int *)); 
+static char *__findenv __P((const char *, int *)); 
 
 /*
  * setenv --
