@@ -154,7 +154,7 @@ athena_osf1.auth:
 athena_irix:
 	make -f Makefile.generic ${WHAT} \
 		LIBS="-ltermlib ../libtelnet/libtelnet.a ${AUTH_LIB}" \
-		LIBPATH="/usr/lib/libtermlib.a \
+		LIBPATH="/usr/lib/libtermlib.so \
 			../libtelnet/libtelnet.a ${AUTH_LIBPATH}" \
 		DEST=${DESTDIR}/usr/athena/bin \
 		DEFINES=${ODEFS}"-Dvfork=fork -DUSE_TERMIO -DUTMPX \
