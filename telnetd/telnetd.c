@@ -849,9 +849,19 @@ doit(who)
 	 * Find an available pty to use.
 	 */
 #ifndef	convex
+# ifndef __sgi
 	pty = getpty(&ptynum);
 	if (pty < 0)
 		fatal(net, "All network ports in use");
+# else
+	/* IRIX 5.3 does most of this work for us.  */
+	/* Dan Mosedale <dmose@netscape.com> */
+
+	extern char *line, *_getpty(int *, int, mode_t, int);
+
+	if ((line = _getpty(&pty,O_RDWR,0600,1)) == 0)
+	  fatal(net, strerror(errno));
+# endif
 #else
 	for (;;) {
 		char *lp;
