@@ -242,11 +242,13 @@ kerberos4_send(ap)
 		return(0);
 	}
 	if (r = krb_mk_req(&auth, KRB_SERVICE_NAME, instance, realm, 0L)) {
-		printf("mk_req failed: %s\r\n", krb_err_txt[r]);
+		printf("mk_req failed for %s.%s@%s: %s\r\n",
+		       KRB_SERVICE_NAME, instance, realm, krb_err_txt[r]);
 		return(0);
 	}
 	if (r = krb_get_cred(KRB_SERVICE_NAME, instance, realm, &cred)) {
-		printf("get_cred failed: %s\r\n", krb_err_txt[r]);
+		printf("get_cred failed for %s.%s@%s: %s\r\n",
+		       KRB_SERVICE_NAME, instance, realm, krb_err_txt[r]);
 		return(0);
 	}
 	if (!auth_sendname(UserNameRequested, strlen(UserNameRequested))) {
