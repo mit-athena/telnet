@@ -1081,6 +1081,27 @@ int env_ovalue = -1;
 #endif	/* ENV_HACK */
 
 /*
+ * safe_setenv()
+ *
+ *	Set an environment variable unless it is considered unsafe.
+ *	User may lock self out by setting these incorrectly.
+ */
+
+void
+safe_setenv(name, value, overwrite)
+     char *name, *value;
+     int overwrite;
+{
+  if (strncmp(name, "LIBPATH", 7) /* AIX */
+      && strncmp(name, "LD_", 3) /* Solaris, SunOS, NetBSD, linux, HP-UX, ... */
+      && strncmp(name, "ELF_LD_", 7) /* linux maybe */
+      && strncmp(name, "_RLD", 4) /* Irix */
+      && strncmp(name, "IFS", 3)) /* "guest" accounts to run shell scripts */
+    setenv(name, value, overwrite);
+  return;
+}
+
+/*
  * suboption()
  *
  *	Look at the sub-option buffer, and try to be helpful to the other
@@ -1419,7 +1440,7 @@ suboption()
 		case ENV_USERVAR:
 			*cp = '\0';
 			if (valp)
-				(void)setenv(varp, valp, 1);
+				(void)safe_setenv(varp, valp, 1);
 			else
 				unsetenv(varp);
 			cp = varp = (char *)subpointer;
@@ -1438,7 +1459,7 @@ suboption()
 	}
 	*cp = '\0';
 	if (valp)
-		(void)setenv(varp, valp, 1);
+		(void)safe_setenv(varp, valp, 1);
 	else
 		unsetenv(varp);
 	break;
