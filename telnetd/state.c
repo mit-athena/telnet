@@ -1501,6 +1501,7 @@ suboption()
 		break;
 	case ENCRYPT_START:
 		encrypt_start(subpointer, SB_LEN());
+		did_encrypt_start = 1;
 		break;
 	case ENCRYPT_END:
 		encrypt_end();
