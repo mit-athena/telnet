@@ -38,13 +38,13 @@
 .ftr C CR
 .\}
 .if t \{\
-.       so /usr/share/tmac/tmac.doc-ditroff
+.       so /usr/athena/lib/tmac/tmac.doc-ditroff
 .\}
 .if n \{\
-.       so /usr/share/tmac/tmac.doc-nroff
+.       so /usr/athena/lib/tmac/tmac.doc-nroff
 .\}
-.so /usr/share/tmac/tmac.doc-common
-.so /usr/share/tmac/tmac.doc-syms
+.so /usr/athena/lib/tmac/tmac.doc-common
+.so /usr/athena/lib/tmac/tmac.doc-syms
 .\" NS Db macro - start/stop DEBUG MODE
 .\" NS Db register DEBUG MODE
 .\" NS iN register DEBUG MODE (inline if 1, to stderr if 0 (default))
