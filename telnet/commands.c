@@ -67,7 +67,9 @@ static char sccsid[] = "@(#)commands.c	8.1 (Berkeley) 6/6/93";
 #include "defines.h"
 #include "types.h"
 
-#if !defined(CRAY) && !defined(sysV88)
+#if defined(linux)
+#include <netinet/in_system.h>
+#elif !defined(CRAY) && !defined(sysV88)
 #include <netinet/in_systm.h>
 # if (defined(vax) || defined(tahoe) || defined(hp300)) && !defined(ultrix)
 # include <machine/endian.h>
@@ -1403,7 +1405,7 @@ shell(argc, argv)
 	     * Fire up the shell in the child.
 	     */
 	    register char *shellp, *shellname;
-#ifndef _AIX
+#if !defined(SOLARIS) && !defined(_AIX)
 	    extern char *rindex();
 #endif
 
@@ -1692,7 +1694,7 @@ env_init()
 	extern char **environ;
 	register char **epp, *cp;
 	register struct env_lst *ep;
-#ifndef _AIX
+#if !defined(SOLARIS) && !defined(_AIX)
 	extern char *index();
 #endif
 
