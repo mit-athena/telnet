@@ -1,18 +1,17 @@
 athena_solaris:
 	make -f Makefile.generic ${WHAT} \
 		LIBS="-ltermlib ../libtelnet/libtelnet.a \
-		  ${AUTH_LIB} /usr/athena/lib/libresolv.a -lsocket -lnsl \
-			/usr/ucblib/libucb.a" \
+		  ${AUTH_LIB} -lsocket -lnsl -lbsd" \
 		LIBPATH="/usr/ccs/lib/libtermlib.a ../libtelnet/libtelnet.a \
 			${AUTH_LIBPATH} /usr/lib/libsocket.a \
-			/usr/lib/libnsl.a /usr/ucblib/libucb.a" \
+			/usr/lib/libnsl.a /usr/athena/lib/libbsd.a" \
 		DEST=${DESTDIR}/usr/athena/bin \
 		DEFINES="-DFILIO_H -DUSE_TERMIO -DKLUDGELINEMODE \
 			-DSTREAMS -DSTREAMSPTY -DDIAGNOSTICS -DSOLARIS \
 			-DENV_HACK -DOLD_ENVIRON -DUTMPX \
 	-DDEFAULT_IM='\"\r\nMIT Athena (%h/Solaris) (%t)\r\n\r\r\n\r\"' \
 			-DLOGIN_ARGS ${AUTH_DEF}" \
-		INCLUDES="-I..  -I../.. ${AUTH_INC} -I/usr/ucbinclude" \
+		INCLUDES="-I..  ${AUTH_INC} -I/usr/ucbinclude" \
 		LIB_OBJ="getent.o strerror.o setenv.o herror.o" \
 		LIB_SRC="getent.c strerror.c setenv.c herror.c" \
 		AR=ar ARFLAGS=cq RANLIB=NONE \
@@ -21,8 +20,8 @@ athena_solaris:
 
 athena_solaris.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
-		AUTH_LIB="-L../../AL -L/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod -lnsl -lsocket -lresolv" \
-		AUTH_LIBPATH="../../AL/libAL.a /usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
+		AUTH_LIB="-L/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod -lnsl -lsocket -lresolv" \
+		AUTH_LIBPATH="/usr/athena/lib/libAL.a /usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
 		AUTH_INC=-I/usr/athena/include \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
 
@@ -38,7 +37,7 @@ athena_aix:
 			-DOLD_ENVIRON -Dunix \
 	-DDEFAULT_IM='\"\r\nMIT Athena (%h/AIX) (%t)\r\n\r\r\n\r\"' \
 			-DLOGIN_ARGS ${AUTH_DEF}" \
-		INCLUDES="-I..  -I../.. ${AUTH_INC}" \
+		INCLUDES="-I..  ${AUTH_INC}" \
 		LIB_OBJ="getent.o setenv.o" \
 		LIB_SRC="getent.c setenv.c" \
 		AR=ar ARFLAGS=cq RANLIB=ranlib \
@@ -47,8 +46,8 @@ athena_aix:
 
 athena_aix.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
-		AUTH_LIB="-L../../AL -L/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
-		AUTH_LIBPATH="../../AL/libAL.a /usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
+		AUTH_LIB="-L/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
+		AUTH_LIBPATH="/usr/athena/lib/libAL.a /usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
 		AUTH_INC=-I/usr/athena/include \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
 
@@ -62,7 +61,7 @@ athena_ultrix:
 	-DDEFAULT_IM='\"\r\nMIT Athena (%h/Ultrix) (%t)\r\n\r\r\n\r\"' \
 			-DKLUDGELINEMODE -DDIAGNOSTICS \
 			-DENV_HACK -DOLD_ENVIRON ${AUTH_DEF}" \
-		INCLUDES="-I.. -I../.. -I/usr/athena/include" \
+		INCLUDES="-I.. -I/usr/athena/include" \
 		LIB_OBJ="getent.o strdup.o" \
 		LIB_SRC="getent.c strdup.c" \
 		AR=ar ARFLAGS=cq RANLIB=ranlib \
@@ -71,8 +70,8 @@ athena_ultrix:
 
 athena_ultrix.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
-		AUTH_LIB="-L../../AL -L/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
-		AUTH_LIBPATH="../../AL/libAL.a /usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
+		AUTH_LIB="-L/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
+		AUTH_LIBPATH="/usr/athena/lib/libAL.a /usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
 
 athena_hpux:
@@ -85,7 +84,7 @@ athena_hpux:
 	-DDEFAULT_IM='\"\r\nMIT Athena (%h/HP-UX) (%t)\r\n\r\r\n\r\"' \
 			-DNO_LOGIN_F -DNO_LOGIN_P -DNO_LOGIN_H \
 			-DDIAGNOSTICS -DLOGIN_ARGS ${AUTH_DEF}" \
-		INCLUDES="-I.. -I../.. -I/usr/athena/include" \
+		INCLUDES="-I.. -I/usr/athena/include" \
 		LIB_OBJ="getent.o setenv.o" \
 		LIB_SRC="getent.c setenv.c" \
 		AR=ar ARFLAGS=cq RANLIB=NONE \
@@ -94,8 +93,8 @@ athena_hpux:
 
 athena_hpux.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
-		AUTH_LIB="-L../../AL -L/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
-		AUTH_LIBPATH="../../AL/libAL.a /usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
+		AUTH_LIB="-L/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
+		AUTH_LIBPATH="/usr/athena/lib/libAL.a /usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
 
 athena_linux:
@@ -110,7 +109,7 @@ athena_linux:
 	-DDEFAULT_IM='\"\r\nMIT SIPB Linux-Athena (%h) (%t)\r\n\r\n\"' \
 			-DKLUDGELINEMODE -DDIAGNOSTICS -DENV_HACK \
 			-DOLD_ENVIRON ${AUTH_DEF}" \
-		INCLUDES="-I.. -I../.. ${AUTH_INC} -I/usr/ucbinclude" \
+		INCLUDES="-I.. ${AUTH_INC} -I/usr/ucbinclude" \
 		LIB_OBJ="getent.o" \
 		LIB_SRC="getent.c" \
 		AR=ar ARFLAGS=cq RANLIB=ranlib \
@@ -119,10 +118,10 @@ athena_linux:
 
 athena_linux.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
-		AUTH_LIB="-L../../AL -L/usr/athena/lib -lAL -lkrb -ldes \
+		AUTH_LIB="-L/usr/athena/lib -lAL -lkrb -ldes \
 			-lcom_err -lhesiod" \
-		AUTH_LIBPATH="../../AL/libAL.a /usr/athena/lib/libkrb.a \
-			/usr/athena/lib/libdes.a" \
+		AUTH_LIBPATH="/usr/athena/lib/libAL.a \
+			/usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 \
 			-DDES_ENCRYPTION -DATHENA_LOGIN"
 
@@ -136,7 +135,7 @@ athena_osf1:
 		    -DDEFAULT_IM='\"\r\nMIT Athena (%h/OSF/1) (%t)\r\n\r\r\n\r\"' \
 			-DUSE_TERMIO -DDIAGNOSTICS -DENV_HACK \
 			-DOLD_ENVIRON ${AUTH_DEF}" \
-		INCLUDES="-I.. -I../.. ${AUTH_INC}"\
+		INCLUDES="-I.. ${AUTH_INC}"\
 		LIB_OBJ="getent.o" \
 		LIB_SRC="getent.c" \
 		AR=ar ARFLAGS=cq RANLIB=ranlib \
@@ -146,8 +145,8 @@ athena_osf1:
 
 athena_osf1.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
-		AUTH_LIB="-L../../AL -L/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
-		AUTH_LIBPATH="/usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
+		AUTH_LIB="-L/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
+		AUTH_LIBPATH="/usr/athena/lib/libAL.h /usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
 		AUTH_INC=-I/usr/athena/include \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
 
@@ -163,7 +162,7 @@ athena_irix:
 		-DENV_HACK -DOLD_ENVIRON \
 		    -DDEFAULT_IM='\"\r\nMIT Athena (%h/Irix) (%t)\r\n\r\r\n\r\"' \
 			${AUTH_DEF}" \
-		INCLUDES="-I.. -I../.. ${AUTH_INC}" \
+		INCLUDES="-I.. ${AUTH_INC}" \
 		LIB_OBJ="getent.o setenv.o" \
 		LIB_SRC="getent.c setenv.c" \
 		AR=ar ARFLAGS=cq RANLIB=NONE \
@@ -173,7 +172,7 @@ athena_irix:
 
 athena_irix.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
-		AUTH_LIB="-L../../AL -L/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
-		AUTH_LIBPATH="../../AL/libAL.a /usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
+		AUTH_LIB="-L/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
+		AUTH_LIBPATH="/usr/athena/lib/libAL.a /usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
 		AUTH_INC=-I/usr/athena/include \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
