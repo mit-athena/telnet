@@ -82,7 +82,7 @@ usage()
 	    prompt,
 #ifdef	AUTHENTICATION
 	    " [-8] [-E] [-K] [-L] [-X atype] [-a] [-d] [-e char] [-k realm]",
-	    "\n\t[-l user] [-f/-F] [-n tracefile] ",
+	    "\n\t[-l user] [-safe] [-f/-F] [-n tracefile] ",
 #else
 	    " [-8] [-E] [-L] [-a] [-d] [-e char] [-l user] [-n tracefile]",
 	    "\n\t",
@@ -142,7 +142,7 @@ main(argc, argv)
 	rlogin = (strncmp(prompt, "rlog", 4) == 0) ? '~' : _POSIX_VDISABLE;
 	autologin = -1;
 
-	while ((ch = getopt(argc, argv, "8EKLS:X:acde:fFk:l:n:rt:x")) != EOF) {
+	while ((ch = getopt(argc, argv, "8EKLS:X:acde:fFk:l:n:rs:t:x")) != EOF) {
 		switch(ch) {
 		case '8':
 			eight = 3;	/* binary output and input */
@@ -259,6 +259,19 @@ main(argc, argv)
 			break;
 		case 'r':
 			rlogin = '~';
+			break;
+		case 's':	/* -safe same as -xaF */
+			if (!strcmp(optarg, "afe")) {
+#ifdef	ENCRYPTION
+			  encrypt_auto(1);
+			  decrypt_auto(1);
+#endif
+			  autologin = 1;
+#if defined(AUTHENTICATION) && defined(KRB5) && defined(FORWARD)
+			  forward_flags |= OPTS_FORWARD_CREDS;
+			  forward_flags |= OPTS_FORWARDABLE_CREDS;
+#endif
+			} else usage();
 			break;
 		case 't':
 #if defined(TN3270) && defined(unix)
