@@ -400,6 +400,7 @@ TerminalNewMode(f)
     int old;
     cc_t esc;
     sigset_t set;
+    struct sigaction sa;
 
     globalmode = f&~MODE_FORCE;
     if (prevmode == f)
@@ -619,10 +620,16 @@ TerminalNewMode(f)
 #endif
 
 #ifdef	SIGTSTP
-	(void) signal(SIGTSTP, susp);
+	sa.sa_handler = susp;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGTSTP, &sa, NULL);
 #endif	/* SIGTSTP */
 #ifdef	SIGINFO
-	(void) signal(SIGINFO, ayt);
+	sa.sa_handler = ayt;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGINFO, &sa, NULL);
 #endif
 #if	defined(USE_TERMIO) && defined(NOKERNINFO)
 	tmp_tc.c_lflag |= NOKERNINFO;
@@ -666,10 +673,16 @@ TerminalNewMode(f)
 #ifdef	SIGINFO
 	SIG_FUNC_RET ayt_status();
 
-	(void) signal(SIGINFO, ayt_status);
+	sa.sa_handler = ayt_status;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGINFO, &sa, NULL);
 #endif
 #ifdef	SIGTSTP
-	(void) signal(SIGTSTP, SIG_DFL);
+	sa.sa_handler = SIG_DFL;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGTSTP, &sa, NULL);
 	sigemptyset(&set);
 	sigaddset(&set, SIGTSTP);
 	sigprocmask(SIG_UNBLOCK, &set, NULL);
@@ -818,7 +831,7 @@ deadpeer(sig)
     int sig;
 {
 	setcommandmode();
-	longjmp(peerdied, -1);
+	siglongjmp(peerdied, -1);
 }
 
     /* ARGSUSED */
@@ -831,7 +844,7 @@ intr(sig)
 	return;
     }
     setcommandmode();
-    longjmp(toplevel, -1);
+    siglongjmp(toplevel, -1);
 }
 
     /* ARGSUSED */
@@ -892,17 +905,27 @@ ayt(sig)
     void
 sys_telnet_init()
 {
-    (void) signal(SIGINT, intr);
-    (void) signal(SIGQUIT, intr2);
-    (void) signal(SIGPIPE, deadpeer);
+    struct sigaction sa;
+
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sa.sa_handler = intr;
+    sigaction(SIGINT, &sa, NULL);
+    sa.sa_handler = intr2;
+    sigaction(SIGQUIT, &sa, NULL);
+    sa.sa_handler = deadpeer;
+    sigaction(SIGPIPE, &sa, NULL);
 #ifdef	SIGWINCH
-    (void) signal(SIGWINCH, sendwin);
+    sa.sa_handler = sendwin;
+    sigaction(SIGWINCH, &sa, NULL);
 #endif
 #ifdef	SIGTSTP
-    (void) signal(SIGTSTP, susp);
+    sa.sa_handler = susp;
+    sigaction(SIGTSTP, &sa, NULL);
 #endif
 #ifdef	SIGINFO
-    (void) signal(SIGINFO, ayt);
+    sa.sa_handler = ayt;
+    sigaction(SIGINFO, &sa, NULL);
 #endif
 
     setconnmode(0);
