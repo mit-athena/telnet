@@ -38,6 +38,7 @@ static char sccsid[] = "@(#)utility.c	8.1 (Berkeley) 6/4/93";
 #define PRINTOPTIONS
 #include <errno.h>
 #include "telnetd.h"
+#include <libtelnet/encrypt.h>
 
 /*
  * utility functions performing io related tasks
@@ -454,9 +455,9 @@ putf(cp, where)
 	char db[100];
 #if !defined(__STDC__) && !defined(_AIX) && !defined(SOLARIS)
 #ifdef	STREAMSPTY
-	extern char *index();
+	extern char *strchr();
 #else
-	extern char *rindex();
+	extern char *strrchr();
 #endif /* STREAMSPTY */
 #endif /* __STDC__ */
 
@@ -472,9 +473,9 @@ putf(cp, where)
 		case 't':
 #ifdef	STREAMSPTY
 			/* names are like /dev/pts/2 -- we want pts/2 */
-			slash = index(line+1, '/');
+			slash = strchr(line+1, '/');
 #else
-			slash = rindex(line, '/');
+			slash = strrchr(line, '/');
 #endif
 			if (slash == (char *) 0)
 				putstr(line);
