@@ -78,12 +78,16 @@ int	auth_level = 0;
 #if	defined(SecurID)
 int	require_SecurID = 0;
 #endif
+#if	defined(ENCRYPTION)
+int	did_encrypt_start = 0;
+#endif
 #if	defined(KRB4)
 extern struct sockaddr_in *PeerName;
 #endif
 
 extern	int utmp_len;
 int	registered_host_only = 0;
+int	alarm_caught;
 
 #ifdef	STREAMSPTY
 # include <stropts.h>
@@ -123,6 +127,10 @@ int	hostinfo = 1;			/* do we print login banner? */
 extern int      newmap; /* nonzero if \n maps to ^M^J */
 int	lowpty = 0, highpty;	/* low, high pty numbers */
 #endif /* CRAY */
+
+#ifdef ATHENA_LOGIN
+#include <unistd.h>
+#endif
 
 int debug = 0;
 int keepalive = 1;
@@ -589,6 +597,15 @@ static unsigned char ttytype_sbbuf[] = {
 	IAC, SB, TELOPT_TTYPE, TELQUAL_SEND, IAC, SE
 };
 
+#ifdef ATHENA_LOGIN
+    void
+alarm_catcher(int sig)
+{
+    if (sig == SIGALRM)
+	alarm_caught = 1;
+}
+#endif
+
     int
 getterminaltype(name)
     char *name;
@@ -620,6 +637,7 @@ getterminaltype(name)
     while (
 #ifdef	ENCRYPTION
 	   his_do_dont_is_changing(TELOPT_ENCRYPT) ||
+	   his_will_wont_is_changing(TELOPT_ENCRYPT) ||
 #endif	/* ENCRYPTION */
 	   his_will_wont_is_changing(TELOPT_TTYPE) ||
 	   his_will_wont_is_changing(TELOPT_TSPEED) ||
@@ -635,6 +653,28 @@ getterminaltype(name)
      */
     if (his_state_is_will(TELOPT_ENCRYPT)) {
 	encrypt_wait();
+#ifdef	ATHENA_LOGIN
+	if (auth_level < 0) {
+	    struct sigaction alarm_action, old_action;
+
+	    alarm_action.sa_handler = alarm_catcher;
+	    sigemptyset(&alarm_action.sa_mask);
+	    alarm_action.sa_flags = 0;
+	    sigaction(SIGALRM, &alarm_action, &old_action);
+	    /*
+	     * Wait for encryption to actually start.
+	     */
+	    alarm_caught = 0;
+	    alarm(5);		/* wait five seconds for more input */
+	    while (!did_encrypt_start) {
+		ttloop();	/* hopefully receive ENCRYPT */
+		if (alarm_caught)
+		    break;	/* give up */
+	    }
+	    alarm(0);
+	    sigaction(SIGALRM, &old_action, NULL);
+#endif	/* ATHENA_LOGIN */
+	}
     }
 #endif	/* ENCRYPTION */
     if (his_state_is_will(TELOPT_TSPEED)) {
