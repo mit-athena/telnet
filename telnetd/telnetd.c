@@ -78,6 +78,9 @@ int	auth_level = 0;
 #if	defined(SecurID)
 int	require_SecurID = 0;
 #endif
+#if	defined(KRB4)
+extern struct sockaddr_in *PeerName;
+#endif
 
 extern	int utmp_len;
 int	registered_host_only = 0;
@@ -502,6 +505,7 @@ main(argc, argv)
 		perror("getpeername");
 		_exit(1);
 	}
+	PeerName = &from;
 	if (keepalive &&
 	    setsockopt(0, SOL_SOCKET, SO_KEEPALIVE,
 			(char *)&on, sizeof (on)) < 0) {
