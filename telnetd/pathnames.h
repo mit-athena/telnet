@@ -33,10 +33,6 @@
  *	@(#)pathnames.h	8.1 (Berkeley) 6/4/93
  */
 
-#if defined(ATHENA_LOGIN) && !defined(hpux)
-# define	_PATH_LOGIN	"/usr/athena/etc/login.krb"
-#endif /* ATHENA_LOGIN */
-
 #if BSD > 43
 
 # include <paths.h>
@@ -57,3 +53,10 @@
 #ifdef BFTPDAEMON
 #define		BFTPPATH	"/usr/ucb/bftp"
 #endif  /* BFTPDAEMON */
+
+#undef                _PATH_AUTH_LOGIN
+#if defined(ATHENA_LOGIN) && !defined(hpux)
+# define      _PATH_AUTH_LOGIN        "/usr/athena/etc/login.krb"
+#else /* ATHENA_LOGIN */
+# define      _PATH_AUTH_LOGIN        _PATH_LOGIN
+#endif /* ATHENA_LOGIN */

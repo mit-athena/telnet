@@ -108,7 +108,9 @@ extern struct sysv sysv;
 #include <sys/resource.h>
 #include <sys/proc.h>
 #endif
+#if !defined(linux) && !defined(sgi)
 #include <sys/tty.h>
+#endif /* linux */
 #ifdef	t_erase
 #undef	t_erase
 #undef	t_kill
@@ -298,11 +300,11 @@ spcset(func, valp, valpp)
 	case SLC_XON:
 		*valp = termbuf.tc.t_startc;
 		*valpp = (cc_t *)&termbuf.tc.t_startc;
-		return(SLC_VARIABLE);
+		return(SLC_VARIABLE|SLC_FLUSHIN|SLC_FLUSHOUT);
 	case SLC_XOFF:
 		*valp = termbuf.tc.t_stopc;
 		*valpp = (cc_t *)&termbuf.tc.t_stopc;
-		return(SLC_VARIABLE);
+		return(SLC_VARIABLE|SLC_FLUSHIN|SLC_FLUSHOUT);
 	case SLC_AO:
 		*valp = termbuf.ltc.t_flushc;
 		*valpp = (cc_t *)&termbuf.ltc.t_flushc;
@@ -368,15 +370,15 @@ spcset(func, valp, valpp)
 		setval(VQUIT, SLC_VARIABLE|SLC_FLUSHIN|SLC_FLUSHOUT);
 	case SLC_XON:
 #ifdef	VSTART
-		setval(VSTART, SLC_VARIABLE);
+		setval(VSTART, SLC_VARIABLE|SLC_FLUSHIN|SLC_FLUSHOUT);
 #else
-		defval(0x13);
+		defval(0x13); /*Ctrl-s*/
 #endif
 	case SLC_XOFF:
 #ifdef	VSTOP
-		setval(VSTOP, SLC_VARIABLE);
+		setval(VSTOP, SLC_VARIABLE|SLC_FLUSHIN|SLC_FLUSHOUT);
 #else
-		defval(0x11);
+		defval(0x11); /*Ctrl-q*/
 #endif
 	case SLC_EW:
 #ifdef	VWERASE
@@ -492,22 +494,30 @@ int *ptynum;
 	}
 
 #else	/* ! STREAMSPTY */
-#ifndef CRAY
+# ifdef _AIX
+	if((p = open("/dev/ptc", 2)) != -1 ){
+	  strcpy(line, ttyname(p));
+	  chown( line, 0, 0);
+	  chmod (line, 0600 );
+	  return (p);
+	}
+# else /*_AIX*/
+#  ifndef CRAY
 	register char *cp, *p1, *p2;
 	register int i;
-#if defined(sun) && defined(TIOCGPGRP) && BSD < 199207
+#   if defined(sun) && defined(TIOCGPGRP) && BSD < 199207
 	int dummy;
-#endif
+#   endif
 
-#ifndef	__hpux
+#   ifndef	__hpux
 	(void) sprintf(line, "/dev/ptyXX");
 	p1 = &line[8];
 	p2 = &line[9];
-#else
+#   else
 	(void) sprintf(line, "/dev/ptym/ptyXX");
 	p1 = &line[13];
 	p2 = &line[14];
-#endif
+#   endif
 
 	for (cp = "pqrstuvwxyzPQRST"; *cp; cp++) {
 		struct stat stb;
@@ -525,28 +535,28 @@ int *ptynum;
 			*p2 = "0123456789abcdef"[i];
 			p = open(line, 2);
 			if (p > 0) {
-#ifndef	__hpux
+#   ifndef	__hpux
 				line[5] = 't';
-#else
+#   else
 				for (p1 = &line[8]; *p1; p1++)
 					*p1 = *(p1+1);
 				line[9] = 't';
-#endif
+#   endif
 				chown(line, 0, 0);
 				chmod(line, 0600);
-#if defined(sun) && defined(TIOCGPGRP) && BSD < 199207
+#   if defined(sun) && defined(TIOCGPGRP) && BSD < 199207
 				if (ioctl(p, TIOCGPGRP, &dummy) == 0
 				    || errno != EIO) {
 					chmod(line, 0666);
 					close(p);
 					line[5] = 'p';
 				} else
-#endif /* defined(sun) && defined(TIOCGPGRP) && BSD < 199207 */
+#   endif /* defined(sun) && defined(TIOCGPGRP) && BSD < 199207 */
 					return(p);
 			}
 		}
 	}
-#else	/* CRAY */
+#  else	/* CRAY */
 	extern lowpty, highpty;
 	struct stat sb;
 
@@ -582,7 +592,8 @@ int *ptynum;
 			(void) close(p);
 		}
 	}
-#endif	/* CRAY */
+#  endif	/* CRAY */
+# endif /*_AIX*/
 #endif	/* STREAMSPTY */
 	return(-1);
 }
@@ -948,6 +959,12 @@ tty_iscrnl()
 /*
  * A table of available terminal speeds
  */
+#ifndef B19200
+#define B19200 B9600
+#endif
+#ifndef B38400
+#define B38400 B9600
+#endif
 struct termspeeds {
 	int	speed;
 	int	value;
@@ -956,8 +973,8 @@ struct termspeeds {
 	{ 110,   B110 },  { 134,   B134 },  { 150,   B150 },
 	{ 200,   B200 },  { 300,   B300 },  { 600,   B600 },
 	{ 1200,  B1200 }, { 1800,  B1800 }, { 2400,  B2400 },
-	{ 4800,  B4800 }, { 9600,  B9600 }, { 19200, B9600 },
-	{ 38400, B9600 }, { -1,    B9600 }
+	{ 4800,  B4800 }, { 9600,  B9600 }, { 19200, B19200 },
+	{ 38400, B38400 }, { -1,    B38400 }
 };
 
 	void
@@ -1133,8 +1150,8 @@ getptyslave()
 	termbuf.c_iflag |= ICRNL;
 	termbuf.c_iflag &= ~IXOFF;
 # endif /* defined(USE_TERMIO) && !defined(CRAY) && (BSD <= 43) */
-	tty_rspeed((def_rspeed > 0) ? def_rspeed : 9600);
-	tty_tspeed((def_tspeed > 0) ? def_tspeed : 9600);
+	tty_rspeed((def_rspeed > 0) ? def_rspeed : 38400);
+	tty_tspeed((def_tspeed > 0) ? def_tspeed : 38400);
 # ifdef	LINEMODE
 	if (waslm)
 		tty_setlinemode(1);
@@ -1188,7 +1205,7 @@ cleanopen(line)
 	(void) chmod(line, 0600);
 #endif
 
-# if !defined(CRAY) && (BSD > 43)
+# if (!defined(CRAY) && (BSD > 43))||defined(_AIX)
 	(void) revoke(line);
 # endif
 #if	defined(_SC_CRAY_SECURE_SYS)
@@ -1275,20 +1292,20 @@ login_tty(t)
 	int t;
 {
 	if (setsid() < 0) {
-#ifdef ultrix
+# ifdef ultrix
 		/*
 		 * The setsid() may have failed because we
 		 * already have a pgrp == pid.  Zero out
 		 * our pgrp and try again...
 		 */
 		if ((setpgrp(0, 0) < 0) || (setsid() < 0))
-#endif
+# endif
 		  /* no way to zero out pgrp on these OS's: */
-#if !defined(_AIX) && !defined(SOLARIS) && !defined(hpux)
+# if !defined(_AIX) && !defined(SOLARIS) && !defined(hpux) && !defined(linux)
 			fatalperror(net, "setsid()");
-#endif
+# endif
 	}
-# ifdef	TIOCSCTTY
+# if defined(TIOCSCTTY) && !defined(hpux)
 	if (ioctl(t, TIOCSCTTY, (char *)0) < 0)
 		fatalperror(net, "ioctl(sctty)");
 #  if defined(CRAY)
@@ -1308,7 +1325,9 @@ login_tty(t)
 	 * setsid() call above may have set our pgrp, so clear
 	 * it out before opening the tty...
 	 */
+#  if !defined(sgi) && !defined(hpux)/* setpgrp(0,0) already done by setsid() */
 	(void) setpgrp(0, 0);
+#  endif
 	close(open(line, O_RDWR));
 # endif
 	if (t != 0)
@@ -1342,7 +1361,9 @@ startslave(host, autologin, autoname)
 	char *autoname;
 {
 	register int i;
+#ifndef __alpha
 	long time();
+#endif
 	char name[256];
 #ifdef	NEWINIT
 	extern char *ptyip;
@@ -1359,7 +1380,7 @@ startslave(host, autologin, autoname)
 		fatal(net, "Authorization failed");
 		exit(1);
 	}
-#endif
+#endif	/* AUTHENTICATION */
 
 #ifndef	NEWINIT
 # ifdef	PARENT_DOES_UTMP
@@ -1523,8 +1544,8 @@ start_login(host, autologin, name)
 
 	bzero(&utmpx, sizeof(utmpx));
 	SCPYN(utmpx.ut_user, ".telnet");
-	/* dont do this for solaris. */
-	SCPYN(utmpx.ut_line, line /* + sizeof("/dev/") - 1 */ );
+	/* the "/dev/" part is wrong on Solaris */
+	SCPYN(utmpx.ut_line, line /* + sizeof("/dev/") - 1 */);
 	utmpx.ut_pid = pid;
 	utmpx.ut_id[0] = 't';
 	utmpx.ut_id[1] = 'n';
@@ -1558,7 +1579,7 @@ start_login(host, autologin, name)
 	{
 		argv = addarg(argv, "-h");
 		argv = addarg(argv, host);
-#if defined(SOLARIS) && ! defined(ATHENA_LOGIN)
+#if defined(SOLARIS) && !defined(ATHENA_LOGIN)
 		/*
 		 * SVR4 version of -h takes TERM= as second arg, or -
 		 */
@@ -1703,8 +1724,8 @@ start_login(host, autologin, name)
 #endif
 	closelog();
         if (auth_level >= 0 && autologin == AUTH_VALID)
-		path_login = _PATH_LOGIN;
-        else path_login = "/bin/login";
+		path_login = _PATH_AUTH_LOGIN;
+        else path_login = _PATH_LOGIN;
 	if (auth_debug_mode) {
 		char **debug_argv;
 
@@ -1716,10 +1737,25 @@ start_login(host, autologin, name)
 #if defined(AUTHENTICATION) && defined(ENCRYPTION)
 	/* if client tries authentication and server wants password anyway */
 	if (autologin && auth_level < 0) {
-		if (decrypt_input)
-			printf("What you type is protected by encryption.\r\n");
+		extern int weak_telnet_key;
+
+		if (decrypt_input) {
+			if (!weak_telnet_key)
+				printf("What you type is protected by encryption.\r\n");
+# ifdef ATHENA_LOGIN
+			else
+			  {
+			    if (time(0) >  790362001) {
+			      printf("You must update your telnet client.\r\n");
+			      AthenaLoginCleanup();
+			      exit(1);
+			    }
+			    else printf("Continuing with INSECURE encryption.\r\n");
+			  }
+# endif /* ATHENA_LOGIN */
+		}
 		else {
-			printf("What you type is not protected.\r\n\r\n");
+			printf("What you type is not protected.\r\n");
 # ifdef ATHENA_LOGIN
 			printf("You must use the encryption option.\r\n\r\n");
 			AthenaLoginCleanup();

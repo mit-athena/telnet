@@ -35,12 +35,10 @@
 .Dd February 3, 1994
 .Dt TELNET 1
 .Os BSD 4.2
-.Sh NAME
-.Nm telnet
-.Nd user interface to the 
-.Tn TELNET
-protocol
-.Sh SYNOPSIS
+.TH TELNET 1 "28 January 1995"
+.SH NAME
+telnet - user interface to the TELNET protocol
+.SH SYNOPSIS
 .Nm telnet
 .Op Fl 8
 .Op Fl E
@@ -99,6 +97,7 @@ to the remote system, including any credentials that
 have already been forwarded into the local environment.
 .It Fl K
 Specifies no automatic login to the remote system.
+This is the opposite of -a.
 .It Fl L
 Specifies an 8-bit data path on output.  This causes the
 BINARY option to be negotiated on output.
@@ -195,7 +194,7 @@ server supports it.
 .It Fl x
 Turns on encryption of the data stream if possible.  This
 option is not available outside of the United States and
-Canada.
+Canada.  Requires the -a option for Kerberos authentication/encryption.
 For MIT Athena, this option is on by default.
 .It Ar host
 Indicates the official name, an alias, or the Internet address
