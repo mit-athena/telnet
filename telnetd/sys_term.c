@@ -1507,6 +1507,7 @@ start_login(host, autologin, name)
 	char *term;
 	char termbuf[64];
 #endif
+	char *path_login;
 
 #ifdef	UTMPX
 	/*
@@ -1693,10 +1694,12 @@ start_login(host, autologin, name)
 		close(pty);
 #endif
 	closelog();
-	execv(_PATH_LOGIN, argv);
+        if (autologin) path_login = _PATH_LOGIN;
+        else path_login = "/bin/login";
+        execv(path_login, argv);
 
-	syslog(LOG_ERR, "%s: %m\n", _PATH_LOGIN);
-	fatalperror(net, _PATH_LOGIN);
+	syslog(LOG_ERR, "%s: %m\n", path_login);
+	fatalperror(net, path_login);
 	/*NOTREACHED*/
 }
 
@@ -1740,6 +1743,11 @@ addarg(argv, val)
  * This is the routine to call when we are all through, to
  * clean up anything that needs to be cleaned up.
  */
+
+#ifndef ATHENA_LOGIN
+#define	AthenaLoginCleanup()
+#endif
+
 	/* ARGSUSED */
 	void
 cleanup(sig)
@@ -1758,19 +1766,19 @@ cleanup(sig)
 	(void)chmod(line, 0666);
 	(void)chown(line, 0, 0);
 	(void) shutdown(net, 2);
-	exit(1);
+	AthenaLoginCleanup(); exit(1);
 # else
 	void rmut();
 
 	rmut();
 	vhangup();	/* XXX */
 	(void) shutdown(net, 2);
-	exit(1);
+	AthenaLoginCleanup(); exit(1);
 # endif
 #else	/* PARENT_DOES_UTMP */
 # ifdef	NEWINIT
 	(void) shutdown(net, 2);
-	exit(1);
+	AthenaLoginCleanup(); exit(1);
 # else	/* NEWINIT */
 #  ifdef CRAY
 	static int incleanup = 0;
@@ -1815,7 +1823,7 @@ cleanup(sig)
 	if (t == 0)
 		cleantmp(&wtmp);
 #  endif /* CRAY */
-	exit(1);
+	AthenaLoginCleanup(); exit(1);
 # endif	/* NEWINT */
 #endif	/* PARENT_DOES_UTMP */
 }

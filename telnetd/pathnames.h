@@ -33,22 +33,26 @@
  *	@(#)pathnames.h	8.1 (Berkeley) 6/4/93
  */
 
+#ifdef ATHENA_LOGIN
+# define	_PATH_LOGIN	"/usr/athena/etc/login.krb"
+#endif /* ATHENA_LOGIN */
+
 #if BSD > 43
 
 # include <paths.h>
 
 # ifndef _PATH_LOGIN
 #  define	_PATH_LOGIN	"/usr/bin/login"
-# endif
+# endif /* _PATH_LOGIN */
 
-#else
+#else /* BSD > 43 */
  
 # define	_PATH_TTY	"/dev/tty"
 # ifndef _PATH_LOGIN
 #  define	_PATH_LOGIN	"/bin/login"
 # endif
 
-#endif
+#endif /* BSD > 43 */
 
 #ifdef BFTPDAEMON
 #define		BFTPPATH	"/usr/ucb/bftp"

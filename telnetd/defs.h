@@ -119,8 +119,12 @@
 # endif
 #endif
 #if !defined(USE_TERMIO) || defined(NO_CC_T)
+# ifdef ultrix
+# include <termios.h>
+# else
 typedef unsigned char cc_t;
-#endif
+# endif /* ultrix */
+#endif /* !defined(USE_TERMIO) || defined(NO_CC_T) */
 
 #ifdef	__STDC__
 #include <unistd.h>
