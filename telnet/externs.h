@@ -64,7 +64,7 @@
 # include <errno.h>
 #endif /* CRAY */
 #ifdef	USE_TERMIO
-# if defined (_AIX) || defined(linux) || defined(__osf__) || defined(SOLARIS) || defined(hpux)
+# if defined (_AIX) || defined(linux) || defined(__osf__) || defined(SOLARIS) || defined(hpux) || defined(sgi)
 #  include <termios.h>
 #  define termio termios
 # elif defined(VINTR)
