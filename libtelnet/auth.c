@@ -587,19 +587,24 @@ auth_intr(sig)
 auth_wait(name)
 	char *name;
 {
+	struct sigaction sa, old;
+
 	if (auth_debug_mode)
 		printf(">>>%s: in auth_wait.\r\n", Name);
 
 	if (Server && !authenticating)
 		return(0);
 
-	(void) signal(SIGALRM, auth_intr);
+	sa.sa_handler = auth_intr;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGALRM, &sa, &old);
 	alarm(30);
 	while (!authenticated)
 		if (telnet_spin())
 			break;
 	alarm(0);
-	(void) signal(SIGALRM, SIG_DFL);
+	sigaction(SIGALRM, &old, NULL);
 
 	/*
 	 * Now check to see if the user is valid or not
