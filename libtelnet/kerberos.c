@@ -73,6 +73,7 @@ static char sccsid[] = "@(#)kerberos.c	8.1 (Berkeley) 6/4/93";
 #ifdef ATHENA_LOGIN
 #include <AL/AL.h>
 #endif
+#include <netinet/in.h>
 
 #include "encrypt.h"
 #include "auth.h"
@@ -325,7 +326,7 @@ kerberos4_is(ap, data, cnt)
 	if (cnt-- < 1)
 		return;
 	if (PeerName)
-	    from_Addr = PereName->sin_addr.s_addr;
+	    from_addr = PeerName->sin_addr.s_addr;
 	switch (*data++) {
 	case KRB_AUTH:
 		if (krb_get_lrealm(realm, 1) != KSUCCESS) {
