@@ -36,6 +36,7 @@ static char sccsid[] = "@(#)utility.c	8.1 (Berkeley) 6/4/93";
 #endif /* not lint */
 
 #define PRINTOPTIONS
+#include <errno.h>
 #include "telnetd.h"
 
 /*
@@ -63,6 +64,9 @@ ttloop()
     }
     ncc = read(net, netibuf, sizeof netibuf);
     if (ncc < 0) {
+	if (errno == EINTR) {
+	    return;
+	}
 	syslog(LOG_INFO, "ttloop:  read: %m\n");
 	exit(1);
     } else if (ncc == 0) {
