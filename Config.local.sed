@@ -9,7 +9,7 @@ athena_solaris:
 		DEST=${DESTDIR}/usr/athena/bin \
 		DEFINES="-DFILIO_H -DUSE_TERMIO -DKLUDGELINEMODE \
 			-DSTREAMS -DSTREAMSPTY -DDIAGNOSTICS -DSOLARIS \
-			-DENV_HACK -DOLD_ENVIRON -DNO_LOGIN_P -DUTMPX \
+			-DENV_HACK -DOLD_ENVIRON -DUTMPX \
 	-DDEFAULT_IM='\"\r\nMIT Athena (%h/Solaris) (%t)\r\n\r\r\n\r\"' \
 			-DLOGIN_ARGS ${AUTH_DEF}" \
 		INCLUDES="-I..  -I../.. ${AUTH_INC} -I/usr/ucbinclude" \
@@ -70,6 +70,29 @@ athena_ultrix:
 		CC="${CC}" LCCFLAGS="ATHENA_LCCFLAGS"
 
 athena_ultrix.auth:
+	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
+		AUTH_LIB="-L../../AL -L/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
+		AUTH_LIBPATH="../../AL/libAL.a /usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
+		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
+
+athena_hpux:
+	make -f Makefile.generic ${WHAT} \
+		LIBS="-lcurses ../libtelnet/libtelnet.a ${AUTH_LIB}" \
+		LIBPATH="/lib/libc.a /lib/libcurses.sl \
+				../libtelnet/libtelnet.a ${AUTH_LIBPATH}" \
+		DEST=${DESTDIR}/usr/bin \
+		DEFINES=${ODEFS}"-Dvfork=fork -DUSE_TERMIO \
+	-DDEFAULT_IM='\"\r\nMIT Athena (%h/HP-UX) (%t)\r\n\r\r\n\r\"' \
+			-DNO_LOGIN_F -DNO_LOGIN_P -DNO_LOGIN_H \
+			-DDIAGNOSTICS -DLOGIN_ARGS ${AUTH_DEF}" \
+		INCLUDES="-I.. -I../.. -I/usr/athena/include" \
+		LIB_OBJ="getent.o setenv.o" \
+		LIB_SRC="getent.c setenv.c" \
+		AR=ar ARFLAGS=cq RANLIB=NONE \
+		LIBEXEC=${DESTDIR}/etc \
+		CC="${CC}" LCCFLAGS="-O"
+
+athena_hpux.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
 		AUTH_LIB="-L../../AL -L/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
 		AUTH_LIBPATH="../../AL/libAL.a /usr/athena/lib/libkrb.a /usr/athena/lib/libdes.a" \
