@@ -1283,7 +1283,8 @@ login_tty(t)
 		 */
 		if ((setpgrp(0, 0) < 0) || (setsid() < 0))
 #endif
-#if !defined(_AIX) && !defined(SOLARIS)
+		  /* no way to zero out pgrp on these OS's: */
+#if !defined(_AIX) && !defined(SOLARIS) && !defined(hpux)
 			fatalperror(net, "setsid()");
 #endif
 	}
@@ -1702,6 +1703,14 @@ start_login(host, autologin, name)
 	closelog();
         if (autologin) path_login = _PATH_LOGIN;
         else path_login = "/bin/login";
+	if (auth_debug_mode) {
+		char **debug_argv;
+
+		printf("%s", path_login);
+		for(debug_argv = argv; *debug_argv; debug_argv++)
+			printf(" %s", *debug_argv);
+		printf("\n");
+	}
         execv(path_login, argv);
 
 	syslog(LOG_ERR, "%s: %m\n", path_login);
