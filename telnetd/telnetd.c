@@ -78,23 +78,25 @@ int	auth_level = 0;
 #if	defined(SecurID)
 int	require_SecurID = 0;
 #endif
+
 #if	defined(ENCRYPTION)
 int	did_encrypt_start = 0;
-#endif
-#if	defined(KRB4)
-extern struct sockaddr_in *PeerName;
 #endif
 
 extern	int utmp_len;
 int	registered_host_only = 0;
-int	alarm_caught;
 
 #ifdef	STREAMSPTY
 # include <stropts.h>
 # include <termio.h>
+
+# ifdef sgi
+# include <sys/stream.h>
+# else
 /* make sure we don't get the bsd version */
 # include "/usr/include/sys/tty.h"
 # include <sys/ptyvar.h>
+# endif
 
 /*
  * Because of the way ptyibuf is used with streams messages, we need
@@ -129,7 +131,7 @@ int	lowpty = 0, highpty;	/* low, high pty numbers */
 #endif /* CRAY */
 
 #ifdef ATHENA_LOGIN
-#include <unistd.h>
+#include <unistd.h>		/* for POSIX alarm() */
 #endif
 
 int debug = 0;
@@ -182,6 +184,9 @@ main(argc, argv)
 	extern int optind;
 #if	defined(IPPROTO_IP) && defined(IP_TOS)
 	int tos = -1;
+#endif
+#ifdef	KRB4
+	extern struct sockaddr_in *PeerName;
 #endif
 
 	pfrontp = pbackp = ptyobuf;
@@ -597,12 +602,14 @@ static unsigned char ttytype_sbbuf[] = {
 	IAC, SB, TELOPT_TTYPE, TELQUAL_SEND, IAC, SE
 };
 
+
 #ifdef ATHENA_LOGIN
+int alarm_caught;
     void
 alarm_catcher(int sig)
 {
-    if (sig == SIGALRM)
-	alarm_caught = 1;
+  if (sig == SIGALRM) alarm_caught++;
+  return;
 }
 #endif
 
@@ -628,6 +635,7 @@ getterminaltype(name)
 
 #ifdef	ENCRYPTION
     send_will(TELOPT_ENCRYPT, 1);
+    send_do(TELOPT_ENCRYPT, 1);
 #endif	/* ENCRYPTION */
     send_do(TELOPT_TTYPE, 1);
     send_do(TELOPT_TSPEED, 1);
@@ -654,27 +662,29 @@ getterminaltype(name)
     if (his_state_is_will(TELOPT_ENCRYPT)) {
 	encrypt_wait();
 #ifdef	ATHENA_LOGIN
-	if (auth_level < 0) {
+	if (auth_level < 0)	/* asking for password regardless of krb auth */
+	  {
 	    struct sigaction alarm_action, old_action;
 
-	    alarm_action.sa_handler = alarm_catcher;
+	    alarm_action.sa_handler=alarm_catcher;
 	    sigemptyset(&alarm_action.sa_mask);
-	    alarm_action.sa_flags = 0;
+	    alarm_action.sa_flags=0;
 	    sigaction(SIGALRM, &alarm_action, &old_action);
 	    /*
 	     * Wait for encryption to actually start.
 	     */
-	    alarm_caught = 0;
-	    alarm(5);		/* wait five seconds for more input */
-	    while (!did_encrypt_start) {
-		ttloop();	/* hopefully receive ENCRYPT */
-		if (alarm_caught)
-		    break;	/* give up */
-	    }
+	    alarm_caught=0;
+	    while (!did_encrypt_start)
+	      {
+		alarm(5);	/* wait 5 seconds for more input */
+		ttloop();	/* hopefully receive ENCRYPT REQUEST-START */
+		if (alarm_caught) break; /* give up */
+	      }
 	    alarm(0);
 	    sigaction(SIGALRM, &old_action, NULL);
+	  }
+
 #endif	/* ATHENA_LOGIN */
-	}
     }
 #endif	/* ENCRYPTION */
     if (his_state_is_will(TELOPT_TSPEED)) {

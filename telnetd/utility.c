@@ -64,9 +64,7 @@ ttloop()
     }
     ncc = read(net, netibuf, sizeof netibuf);
     if (ncc < 0) {
-	if (errno == EINTR) {
-	    return;
-	}
+        if (errno == EINTR) return; /* interrupt from alarm() */
 	syslog(LOG_INFO, "ttloop:  read: %m\n");
 	exit(1);
     } else if (ncc == 0) {
@@ -454,13 +452,13 @@ putf(cp, where)
 	char *slash;
 	time_t t;
 	char db[100];
+#if !defined(__STDC__) && !defined(_AIX) && !defined(SOLARIS)
 #ifdef	STREAMSPTY
 	extern char *index();
 #else
-#ifndef _AIX
 	extern char *rindex();
-#endif
-#endif
+#endif /* STREAMSPTY */
+#endif /* __STDC__ */
 
 	putlocation = where;
 
