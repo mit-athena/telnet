@@ -102,6 +102,9 @@ Specifies no automatic login to the remote system.
 .It Fl L
 Specifies an 8-bit data path on output.  This causes the
 BINARY option to be negotiated on output.
+.It Fl N
+No fallback.  This option tells telnet to exit if the remote host does
+not support the requested authentication/encryption options.
 .It Fl S Ar tos
 Sets the IP type-of-service (TOS) option for the telnet
 connection to the value
@@ -125,6 +128,7 @@ The name used is that of the current user as returned by
 .Xr getlogin 2
 if it agrees with the current user ID,
 otherwise it is the name associated with the user ID.
+For MIT Athena, this option is on by default.
 .It Fl c
 Disables the reading of the user's
 .Pa \&.telnetrc
@@ -184,11 +188,15 @@ In this
 mode, the escape character is set to the tilde (~) character,
 unless modified by the -e option.
 .It Fl safe
-For MIT Athena, this option is equivalent to -ax.
+For MIT Athena, this option is equivalent to -axN.
+.It Fl u
+unauthentic - don't attempt authentication or encryption, even if the
+server supports it.
 .It Fl x
 Turns on encryption of the data stream if possible.  This
 option is not available outside of the United States and
 Canada.
+For MIT Athena, this option is on by default.
 .It Ar host
 Indicates the official name, an alias, or the Internet address
 of a remote host.

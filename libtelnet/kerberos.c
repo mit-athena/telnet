@@ -86,6 +86,7 @@ int krb_get_lrealm P((char *, int));
 int kuserok P((AUTH_DAT *, char *));
 
 extern auth_debug_mode;
+int krb4_accepted;
 
 static unsigned char str_data[1024] = { IAC, SB, TELOPT_AUTHENTICATION, 0,
 			  		AUTHTYPE_KERBEROS_V4, };
@@ -100,6 +101,8 @@ static unsigned char str_name[1024] = { IAC, SB, TELOPT_AUTHENTICATION,
 
 #define KRB_SERVICE_NAME   "rcmd"
 
+/* Send a message to the user while connected */
+#define GiveUserMsg(string) fputs(string, stderr)
 static	KTEXT_ST auth;
 static	char name[ANAME_SZ];
 static	AUTH_DAT adat = { 0 };
@@ -191,6 +194,7 @@ kerberos4_init(ap, server)
 {
 	FILE *fp;
 
+	krb4_accepted=0;
 	if (server) {
 		str_data[3] = TELQUAL_REPLY;
 		if ((fp = fopen(KEYFILE, "r")) == NULL)
@@ -220,10 +224,10 @@ kerberos4_send(ap)
 	CREDENTIALS cred;
 	int r;
 
-	printf("[ Trying KERBEROS4 ... ]\n");	
+	GiveUserMsg("[ Trying KERBEROS4 ... ]\r\n");	
 	if (!UserNameRequested) {
 		if (auth_debug_mode) {
-			printf("Kerberos V4: no user name supplied\r\n");
+			GiveUserMsg("Kerberos V4: no user name supplied\r\n");
 		}
 		return(0);
 	}
@@ -420,14 +424,16 @@ kerberos4_reply(ap, data, cnt)
 	switch (*data++) {
 	case KRB_REJECT:
 		if (cnt > 0) {
-			printf("[ Kerberos V4 refuses authentication because %.*s ]\r\n",
+			fprintf(stderr,
+				"[ Kerberos V4 refuses authentication because %.*s ]\r\n",
 				cnt, data);
 		} else
-			printf("[ Kerberos V4 refuses authentication ]\r\n");
+			GiveUserMsg("[ Kerberos V4 refuses authentication ]\r\n");
 		auth_send_retry();
 		return;
 	case KRB_ACCEPT:
-		printf("[ Kerberos V4 accepts you ]\n");
+		krb4_accepted=1;
+		GiveUserMsg("[ Kerberos V4 accepts you ]\r\n");
 		if ((ap->way & AUTH_HOW_MASK) == AUTH_HOW_MUTUAL) {
 			/*
 			 * Send over the encrypted challenge.
@@ -457,12 +463,12 @@ kerberos4_reply(ap, data, cnt)
 						sizeof(challenge))))
 		{
 #endif	/* ENCRYPTION */
-			printf("[ Kerberos V4 challenge failed!!! ]\r\n");
+			GiveUserMsg("[ Kerberos V4 challenge failed!!! ]\r\n");
 			auth_send_retry();
 			return;
 #ifdef	ENCRYPTION
 		}
-		printf("[ Kerberos V4 challenge successful ]\r\n");
+		GiveUserMsg("[ Kerberos V4 challenge successful ]\r\n");
 		auth_finished(ap, AUTH_USER);
 #endif	/* ENCRYPTION */
 		break;
