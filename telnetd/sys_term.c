@@ -1550,8 +1550,14 @@ start_login(host, autologin, name)
 
 	memset(&utmpx, 0, sizeof(utmpx));
 	SCPYN(utmpx.ut_user, ".telnet");
-	/* the "/dev/" part is wrong on Solaris */
-	SCPYN(utmpx.ut_line, line /* + sizeof("/dev/") - 1 */);
+#ifdef SOLARIS
+	/* The Solaris native telnetd puts the full tty device name in
+	 * ut_line, and login removes the "/dev/" part when it makes the
+	 * USER_PROCESS entry. */
+	SCPYN(utmpx.ut_line, line);
+#else
+	SCPYN(utmpx.ut_line, line + sizeof("/dev/") - 1);
+#endif
 	utmpx.ut_pid = pid;
 	utmpx.ut_id[0] = 't';
 	utmpx.ut_id[1] = 'n';
