@@ -38,5 +38,9 @@ extern char *LocalHostName;
 extern char *RemoteHostName;
 extern int ConnectedCount;
 extern int ReservedPort;
+#ifdef ATHENA_LOGIN
+#include <AL/AL.h>
+extern ALsessionStruct AthenaLoginSession;
+#endif ATHENA_LOGIN
 
 #include "misc-proto.h"

@@ -69,6 +69,9 @@ static char sccsid[] = "@(#)kerberos.c	8.1 (Berkeley) 6/4/93";
 #else
 #include <string.h>
 #endif
+#ifdef ATHENA_LOGIN
+#include <AL/AL.h>
+#endif
 
 #include "encrypt.h"
 #include "auth.h"
@@ -105,6 +108,49 @@ static Block	session_key	= { 0 };
 static Schedule sched;
 static Block	challenge	= { 0 };
 #endif	/* ENCRYPTION */
+
+#ifdef ATHENA_LOGIN
+static int DidStartUser=0;
+
+int
+AthenaUserOk(kdata, username)
+     AUTH_DAT *kdata;
+     char *username;
+{
+  long code1, code2;
+
+  if (!DidStartUser)
+    {
+      code1=ALsetUser(&AthenaLoginSession, username, ALisRemoteSession);
+      if (ALisError(code1))
+	{
+	  com_err("telnetd", code1, "ALsetUser (%s)",
+		  ALcontext(&AthenaLoginSession));
+	  return 1;
+	}
+
+      code2=ALstart(&AthenaLoginSession);
+      if (ALisError(code2))
+	{
+	  com_err("telnetd", code2, "ALstart (%s)",
+		  ALcontext(&AthenaLoginSession));
+	  return 1;
+	}
+    }
+
+  DidStartUser=1;
+  return(kuserok(kdata, username));
+}
+#define kuserok(k, u) AthenaUserOk(k, u)
+
+void
+AthenaLoginCleanup()
+{
+  if (DidStartUser) ALend(&AthenaLoginSession);
+  return;
+}
+
+#endif /* ATHENA_LOGIN */
 
 	static int
 Data(ap, type, d, c)

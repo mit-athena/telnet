@@ -41,6 +41,9 @@ char *RemoteHostName;
 char *LocalHostName;
 char *UserNameRequested = 0;
 int ConnectedCount = 0;
+#ifdef ATHENA_LOGIN
+ALsessionStruct AthenaLoginSession;
+#endif ATHENA_LOGIN
 
 	void
 auth_encrypt_init(local, remote, name, server)
