@@ -63,6 +63,9 @@ extern int	require_SecurID;
 #if	defined(AUTHENTICATION)
 extern int	auth_level;
 #endif
+#if	defined(ENCRYPTION)
+extern int	did_encrypt_start;
+#endif
 
 extern slcfun	slctab[NSLC + 1];	/* slc mapping table */
 
