@@ -1403,7 +1403,9 @@ shell(argc, argv)
 	     * Fire up the shell in the child.
 	     */
 	    register char *shellp, *shellname;
+#ifndef _AIX
 	    extern char *rindex();
+#endif
 
 	    shellp = getenv("SHELL");
 	    if (shellp == NULL)
@@ -1690,7 +1692,9 @@ env_init()
 	extern char **environ;
 	register char **epp, *cp;
 	register struct env_lst *ep;
+#ifndef _AIX
 	extern char *index();
+#endif
 
 	for (epp = environ; *epp; epp++) {
 		if (cp = index(*epp, '=')) {
@@ -2222,7 +2226,10 @@ tn(argc, argv)
     unsigned long temp;
     extern char *inet_ntoa();
 #if	defined(IP_OPTIONS) && defined(IPPROTO_IP)
-    char *srp = 0, *strrchr();
+    char *srp = 0;
+#ifndef _AIX
+    char *strrchr();
+#endif
     unsigned long sourceroute(), srlen;
 #endif
     char *cmd, *hostp = 0, *portp = 0, *user = 0;

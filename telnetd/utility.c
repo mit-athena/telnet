@@ -380,7 +380,9 @@ edithost(pat, host)
 	register char *host;
 {
 	register char *res = editedhost;
+#ifndef _AIX
 	char *strncpy();
+#endif
 
 	if (!pat)
 		pat = "";
@@ -451,7 +453,9 @@ putf(cp, where)
 #ifdef	STREAMSPTY
 	extern char *index();
 #else
+#ifndef _AIX
 	extern char *rindex();
+#endif
 #endif
 
 	putlocation = where;
