@@ -3,8 +3,7 @@ athena_solaris:
 		LIBS="-ltermlib ../libtelnet/libtelnet.a \
 		  ${AUTH_LIB} -lsocket -lnsl" \
 		LIBPATH="/usr/ccs/lib/libtermlib.a ../libtelnet/libtelnet.a \
-			${AUTH_LIBPATH} /usr/lib/libsocket.a \
-			/usr/lib/libnsl.a" \
+			/usr/lib/libsocket.a /usr/lib/libnsl.a" \
 		DEST=${DESTDIR}/usr/athena/bin \
 		DEFINES="-DFILIO_H -DUSE_TERMIO -DKLUDGELINEMODE \
 			-DSTREAMS -DSTREAMSPTY -DDIAGNOSTICS -DSOLARIS \
@@ -20,8 +19,7 @@ athena_solaris:
 
 athena_solaris.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
-		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod -lnsl -lsocket -lresolv" \
-		AUTH_LIBPATH="${ATHTOOLROOT}/usr/athena/lib/libAL.a ${ATHTOOLROOT}/usr/athena/lib/libkrb.a ${ATHTOOLROOT}/usr/athena/lib/libdes.a" \
+		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb4 -ldes425 -lkrb5 -lcrypto -lcom_err -lhesiod -lnsl -lsocket -lresolv" \
 		AUTH_INC=-I${ATHTOOLROOT}/usr/athena/include \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
 
@@ -30,7 +28,7 @@ athena_aix:
 		LIBS="../libtelnet/libtelnet.a -lbsd\
 			-lcurses ${AUTH_LIB}" \
 		LIBPATH="../libtelnet/libtelnet.a /usr/lib/libbsd.a \
-			 /usr/lib/libcurses.a ${AUTH_LIBPATH}" \
+			 /usr/lib/libcurses.a" \
 		DEST=${DESTDIR}/usr/athena/bin \
 		DEFINES="-DUSE_TERMIO -DKLUDGELINEMODE \
 			-DSTREAMS -DDIAGNOSTICS \
@@ -46,8 +44,7 @@ athena_aix:
 
 athena_aix.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
-		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
-		AUTH_LIBPATH="${ATHTOOLROOT}/usr/athena/lib/libAL.a ${ATHTOOLROOT}/usr/athena/lib/libkrb.a ${ATHTOOLROOT}/usr/athena/lib/libdes.a" \
+		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb4 -ldes425 -lkrb5 -lcrypto -lcom_err -lhesiod" \
 		AUTH_INC=-I${ATHTOOLROOT}/usr/athena/include \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
 
@@ -55,7 +52,7 @@ athena_ultrix:
 	make -f Makefile.generic ${WHAT} \
 		LIBS="-ltermlib -lcursesX ../libtelnet/libtelnet.a ${AUTH_LIB}" \
 		LIBPATH="/lib/libc.a /usr/lib/libtermlib.a /usr/lib/libcursesX.a \
-			../libtelnet/libtelnet.a ${AUTH_LIBPATH}" \
+			../libtelnet/libtelnet.a" \
 		DEST=${DESTDIR}/usr/athena/bin \
 		DEFINES=${ODEFS}" \
 	-DDEFAULT_IM='\"\r\nMIT Athena (%h/Ultrix) (%t)\r\n\r\r\n\r\"' \
@@ -70,15 +67,14 @@ athena_ultrix:
 
 athena_ultrix.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
-		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
-		AUTH_LIBPATH="${ATHTOOLROOT}/usr/athena/lib/libAL.a ${ATHTOOLROOT}/usr/athena/lib/libkrb.a ${ATHTOOLROOT}/usr/athena/lib/libdes.a" \
+		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb4 -ldes425 -lkrb5 -lcrypto -lcom_err -lhesiod" \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
 
 athena_hpux:
 	make -f Makefile.generic ${WHAT} \
 		LIBS="-lcurses ../libtelnet/libtelnet.a ${AUTH_LIB}" \
 		LIBPATH="/lib/libc.a /lib/libcurses.sl \
-				../libtelnet/libtelnet.a ${AUTH_LIBPATH}" \
+				../libtelnet/libtelnet.a" \
 		DEST=${DESTDIR}/usr/bin \
 		DEFINES=${ODEFS}"-Dvfork=fork -DUSE_TERMIO \
 	-DDEFAULT_IM='\"\r\nMIT Athena (%h/HP-UX) (%t)\r\n\r\r\n\r\"' \
@@ -93,8 +89,7 @@ athena_hpux:
 
 athena_hpux.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
-		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
-		AUTH_LIBPATH="${ATHTOOLROOT}/usr/athena/lib/libAL.a ${ATHTOOLROOT}/usr/athena/lib/libkrb.a ${ATHTOOLROOT}/usr/athena/lib/libdes.a" \
+		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb4 -ldes425 -lkrb5 -lcrypto -lcom_err -lhesiod" \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
 
 athena_linux:
@@ -102,8 +97,7 @@ athena_linux:
 		LIBS="-ltermcap ../libtelnet/libtelnet.a -lbsd \
 			${AUTH_LIB}" \
 		LIBPATH="/usr/lib/libc.a /usr/lib/libtermcap.a \
-			../libtelnet/libtelnet.a /usr/lib/libbsd.a \
-			${AUTH_LIBPATH}" \
+			../libtelnet/libtelnet.a /usr/lib/libbsd.a" \
 		DEST=${DESTDIR}/usr/athena/bin \
 		DEFINES=${ODEFS}" -DTERMCAP -DUSE_TERMIO \
 	-DDEFAULT_IM='\"\r\nMIT SIPB Linux-Athena (%h) (%t)\r\n\r\n\"' \
@@ -118,10 +112,7 @@ athena_linux:
 
 athena_linux.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
-		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb -ldes \
-			-lcom_err -lhesiod" \
-		AUTH_LIBPATH="${ATHTOOLROOT}/usr/athena/lib/libAL.a \
-			${ATHTOOLROOT}/usr/athena/lib/libkrb.a ${ATHTOOLROOT}/usr/athena/lib/libdes.a" \
+		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb4 -ldes425 -lkrb5 -lcrypto -lcom_err -lhesiod" \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 \
 			-DDES_ENCRYPTION -DATHENA_LOGIN"
 
@@ -129,7 +120,7 @@ athena_osf1:
 	make -f Makefile.generic ${WHAT} \
 		LIBS="-lutil -ltermcap ../libtelnet/libtelnet.a ${AUTH_LIB}" \
 		LIBPATH="/usr/lib/libc.a /usr/lib/libtermcap.a \
-				../libtelnet/libtelnet.a ${AUTH_LIBPATH}" \
+				../libtelnet/libtelnet.a" \
 		DEST=${DESTDIR}/usr/athena/bin \
 		DEFINES=${ODEFS}"-DTERMCAP -DKLUDGELINEMODE \
 		    -DDEFAULT_IM='\"\r\nMIT Athena (%h/OSF/1) (%t)\r\n\r\r\n\r\"' \
@@ -145,8 +136,7 @@ athena_osf1:
 
 athena_osf1.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
-		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
-		AUTH_LIBPATH="${ATHTOOLROOT}/usr/athena/lib/libAL.a ${ATHTOOLROOT}/usr/athena/lib/libkrb.a ${ATHTOOLROOT}/usr/athena/lib/libdes.a" \
+		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb4 -ldes425 -lkrb5 -lcrypto -lcom_err -lhesiod" \
 		AUTH_INC=-I${ATHTOOLROOT}/usr/athena/include \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
 
@@ -154,8 +144,7 @@ athena_osf1.auth:
 athena_irix:
 	make -f Makefile.generic ${WHAT} \
 		LIBS="-ltermlib ../libtelnet/libtelnet.a ${AUTH_LIB}" \
-		LIBPATH="/usr/lib/libtermlib.so \
-			../libtelnet/libtelnet.a ${AUTH_LIBPATH}" \
+		LIBPATH="/usr/lib/libtermlib.so ../libtelnet/libtelnet.a" \
 		DEST=${DESTDIR}/usr/athena/bin \
 		DEFINES=${ODEFS}"-Dvfork=fork -DUSE_TERMIO -DUTMPX \
 		-DKLUDGELINEMODE -DSTREAMS -DDIAGNOSTICS \
@@ -172,7 +161,6 @@ athena_irix:
 
 athena_irix.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
-		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb -ldes -lcom_err -lhesiod" \
-		AUTH_LIBPATH="${ATHTOOLROOT}/usr/athena/lib/libAL.a ${ATHTOOLROOT}/usr/athena/lib/libkrb.a ${ATHTOOLROOT}/usr/athena/lib/libdes.a" \
+		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb4 -ldes425 -lkrb5 -lcrypto -lcom_err -lhesiod" \
 		AUTH_INC=-I${ATHTOOLROOT}/usr/athena/include \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
