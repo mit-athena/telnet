@@ -59,3 +59,10 @@
 #define	MODE_COMMAND_LINE(m)	((m)==-1)
 
 #define	CONTROL(x)	((x)&0x1f)		/* CTRL(x) is not portable */
+
+/* Silly result of Athena release meeting, 1/19/95 */
+/* Not my idea	-brlewis */
+#define STARTUP_MESSAGE_SAFE \
+"...including options requested by -safe: \"-axN\"\r\n"
+#define STARTUP_MESSAGE_DEFAULT \
+"...including Athena's default telnet options: \"-ax\"\r\n"
