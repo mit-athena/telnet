@@ -61,6 +61,9 @@ static char sccsid[] = "@(#)sys_term.c	8.1 (Berkeley) 6/4/93";
 int	utmp_len = MAXHOSTNAMELEN;	/* sizeof(init_request.host) */
 #else	/* NEWINIT*/
 # ifdef	UTMPX
+#ifdef sgi
+#include <sac.h>
+#endif
 # include <utmpx.h>
 struct	utmpx wtmp;
 # else
@@ -470,11 +473,13 @@ getnpty()
  *
  * Returns the file descriptor of the opened pty.
  */
+#ifndef sgi
 static char Xline[] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 char *line = Xline;
 #ifdef	CRAY
 char *myline = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 #endif	/* CRAY */
+#endif
 
 	int
 getpty(ptynum)
@@ -1301,7 +1306,7 @@ login_tty(t)
 		if ((setpgrp(0, 0) < 0) || (setsid() < 0))
 # endif
 		  /* no way to zero out pgrp on these OS's: */
-# if !defined(_AIX) && !defined(SOLARIS) && !defined(hpux) && !defined(linux)
+# if !defined(_AIX) && !defined(SOLARIS) && !defined(hpux) && !defined(linux) && !defined(sgi)
 			fatalperror(net, "setsid()");
 # endif
 	}
