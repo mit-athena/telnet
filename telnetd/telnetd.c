@@ -73,14 +73,9 @@ struct	socket_security ss;
 
 #if	defined(AUTHENTICATION)
 #include <libtelnet/auth.h>
-int	auth_level = 0;
 #endif
 #if	defined(SecurID)
 int	require_SecurID = 0;
-#endif
-
-#if	defined(ENCRYPTION)
-int	did_encrypt_start = 0;
 #endif
 
 extern	int utmp_len;
