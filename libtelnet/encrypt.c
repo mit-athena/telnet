@@ -399,6 +399,9 @@ encrypt_display()
 	int
 EncryptStatus()
 {
+#ifdef DEBUG_DES_SESSION_KEY
+	print_session_key();
+#endif
 	if (encrypt_output)
 		printf("Currently encrypting output with %s\r\n",
 			ENCTYPE_NAME(encrypt_mode));

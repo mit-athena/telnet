@@ -119,7 +119,7 @@ void ofb64_printsub P((unsigned char *, int, unsigned char *, int));
 
 int  des_new_random_key P((Block));
 void des_set_random_generator_seed P((Block));
-void des_key_sched P((Block, Schedule));
+int des_key_sched P((Block, Schedule));
 void des_ecb_encrypt P((Block, Block, Schedule, int));
 int  des_string_to_key P((char *, Block));
 #endif	/* ENCRYPTION */

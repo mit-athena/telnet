@@ -38,7 +38,7 @@ CFLAGS= ${LCCFLAGS} ${DEFINES} ${INCLUDES}
 
 ${LIB}: ${OBJS}
 	rm -f ${LIB}
-	${AR} ${ARFLAGS} ${LIB} `lorder ${OBJS} | tsort`
+	${AR} ${ARFLAGS} ${LIB} ${OBJS}
 	@if [ ${RANLIB} != NONE ]; \
 		then echo ${RANLIB} ${LIB}; ${RANLIB} ${LIB}; fi
 
