@@ -227,7 +227,7 @@ copy_termbuf(cp, len)
 {
 	if (len > sizeof(termbuf))
 		len = sizeof(termbuf);
-	bcopy(cp, (char *)&termbuf, len);
+	memcpy(&termbuf, cp, len);
 	termbuf2 = termbuf;
 }
 #endif	/* defined(LINEMODE) && defined(TIOCPKT_IOCTL) */
@@ -239,17 +239,17 @@ set_termbuf()
 	 * Only make the necessary changes.
 	 */
 #ifndef	USE_TERMIO
-	if (bcmp((char *)&termbuf.sg, (char *)&termbuf2.sg, sizeof(termbuf.sg)))
+	if (memcmp(&termbuf.sg, &termbuf2.sg, sizeof(termbuf.sg)))
 		(void) ioctl(pty, TIOCSETN, (char *)&termbuf.sg);
-	if (bcmp((char *)&termbuf.tc, (char *)&termbuf2.tc, sizeof(termbuf.tc)))
+	if (memcmp(&termbuf.tc, &termbuf2.tc, sizeof(termbuf.tc)))
 		(void) ioctl(pty, TIOCSETC, (char *)&termbuf.tc);
-	if (bcmp((char *)&termbuf.ltc, (char *)&termbuf2.ltc,
+	if (memcmp(&termbuf.ltc, &termbuf2.ltc,
 							sizeof(termbuf.ltc)))
 		(void) ioctl(pty, TIOCSLTC, (char *)&termbuf.ltc);
 	if (termbuf.lflags != termbuf2.lflags)
 		(void) ioctl(pty, TIOCLSET, (char *)&termbuf.lflags);
 #else	/* USE_TERMIO */
-	if (bcmp((char *)&termbuf, (char *)&termbuf2, sizeof(termbuf)))
+	if (memcmp(&termbuf, &termbuf2, sizeof(termbuf)))
 # ifdef  STREAMSPTY
 		(void) tcsetattr(ttyfd, TCSANOW, &termbuf);
 # else
@@ -1118,7 +1118,7 @@ getptyslave()
 	init_termbuf();
 # ifdef	TIOCGWINSZ
 	if (def_row || def_col) {
-		bzero((char *)&ws, sizeof(ws));
+		memset(&ws, 0, sizeof(ws));
 		ws.ws_col = def_col;
 		ws.ws_row = def_row;
 		(void)ioctl(t, TIOCSWINSZ, (char *)&ws);
@@ -1331,7 +1331,7 @@ login_tty(t)
 	 * setsid() call above may have set our pgrp, so clear
 	 * it out before opening the tty...
 	 */
-#  if !defined(sgi) && !defined(hpux)/* setpgrp(0,0) already done by setsid() */
+#  if !defined(sgi) && !defined(hpux) && !defined(SOLARIS) /* setpgrp(0,0) already done by setsid() */
 	(void) setpgrp(0, 0);
 #  endif
 	close(open(line, O_RDWR));
@@ -1548,7 +1548,7 @@ start_login(host, autologin, name)
 	 * Create utmp entry for child
 	 */
 
-	bzero(&utmpx, sizeof(utmpx));
+	memset(&utmpx, 0, sizeof(utmpx));
 	SCPYN(utmpx.ut_user, ".telnet");
 	/* the "/dev/" part is wrong on Solaris */
 	SCPYN(utmpx.ut_line, line /* + sizeof("/dev/") - 1 */);
