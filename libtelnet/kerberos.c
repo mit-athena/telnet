@@ -57,6 +57,7 @@ static char sccsid[] = "@(#)kerberos.c	8.1 (Berkeley) 6/4/93";
 
 #ifdef	KRB4
 #include <sys/types.h>
+#include <netinet/in.h>
 #include <arpa/telnet.h>
 #include <stdio.h>
 #include <des.h>        /* BSD wont include this in krb.h, so we do it here */
@@ -73,7 +74,6 @@ static char sccsid[] = "@(#)kerberos.c	8.1 (Berkeley) 6/4/93";
 #ifdef ATHENA_LOGIN
 #include <AL/AL.h>
 #endif
-#include <netinet/in.h>
 
 #include "encrypt.h"
 #include "auth.h"
@@ -112,9 +112,21 @@ static	AUTH_DAT adat = { 0 };
 static Block	session_key	= { 0 };
 static Schedule sched;
 static Block	challenge	= { 0 };
+static char update_warning[]="WARNING:  Your telnet program is out of date.  It cannot properly\r\nencrypt your session.  Please update your telnet program to a new\r\nversion as soon as possible, this version will cease to work on\r\nTuesday, 1/17/95.  Contact the MIT Network Services Help Desk at\r\n253-4101 (net-help@mit.edu), if you have any questions.\007\r\n\r\n";
+static char update_ok[]="Your telnet client is up-to-date.\r\n";
+int weak_telnet_key=0;
 #endif	/* ENCRYPTION */
 
-struct sockaddr_in *PeerName = NULL;
+void
+print_session_key()
+{
+	int i;
+
+	printf("Session key is");
+	for(i=0; i<sizeof(session_key); i++)
+	  printf(" %d", (int) (session_key[i]));
+	printf("\n");
+}
 
 #ifdef ATHENA_LOGIN
 static int DidStartUser=0;
@@ -308,6 +320,8 @@ kerberos4_send(ap)
 	return(1);
 }
 
+struct sockaddr_in *PeerName=(struct sockaddr_in *)0;
+
 	void
 kerberos4_is(ap, data, cnt)
 	Authenticator *ap;
@@ -321,12 +335,11 @@ kerberos4_is(ap, data, cnt)
 	char realm[REALM_SZ];
 	char instance[INST_SZ];
 	int r;
-	long from_addr = 0;
+	u_long from_addr=0L;	/* IP address of peer */
 
 	if (cnt-- < 1)
 		return;
-	if (PeerName)
-	    from_addr = PeerName->sin_addr.s_addr;
+	if (PeerName) from_addr = PeerName->sin_addr.s_addr;
 	switch (*data++) {
 	case KRB_AUTH:
 		if (krb_get_lrealm(realm, 1) != KSUCCESS) {
@@ -344,6 +357,7 @@ kerberos4_is(ap, data, cnt)
 			printf("\r\n");
 		}
 		instance[0] = '*'; instance[1] = 0;
+
 		if (r = krb_rd_req(&auth, KRB_SERVICE_NAME,
 				   instance, from_addr, &adat, "")) {
 			if (auth_debug_mode)
@@ -379,6 +393,11 @@ kerberos4_is(ap, data, cnt)
 			break;
 		}
 
+		/*
+		 * Initialize the random number generator since it's
+		 * used later on by the encryption routine.
+		 */
+		des_init_random_number_generator(session_key);
 		des_key_sched(session_key, sched);
 		bcopy((void *)data, (void *)datablock, sizeof(Block));
 		/*
@@ -387,6 +406,8 @@ kerberos4_is(ap, data, cnt)
 		 * ENCRYPT option.
 		 */
 		des_ecb_encrypt(datablock, session_key, sched, 1);
+		if (weak_telnet_key = !des_check_key_parity(session_key))
+		    net_write(update_warning, strlen(update_warning));
 		skey.type = SK_DES;
 		skey.length = 8;
 		skey.data = session_key;
@@ -580,7 +601,7 @@ kerberos4_cksum(d, n)
 	 * about the loop not being entered at the top.
 	 */
 	switch (n&03)
-	while (n > 0) {
+	while (n > 0) { /* it's intentional that loop is not entered at top */
 	case 0:
 		ck ^= (int)*d++ << 24;
 		--n;
