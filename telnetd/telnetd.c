@@ -1005,6 +1005,7 @@ telnet(f, p, host)
 	char *HE;
 	char *HN;
 	char *IM;
+	struct sigaction sa;
 	void netflush();
 
 	/*
@@ -1140,25 +1141,37 @@ telnet(f, p, host)
 #endif	/* defined(SO_OOBINLINE) */
 
 #ifdef	SIGTSTP
-	(void) signal(SIGTSTP, SIG_IGN);
+	sa.sa_handler = SIG_IGN;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGTSTP, &sa, NULL);
 #endif
 #ifdef	SIGTTOU
 	/*
 	 * Ignoring SIGTTOU keeps the kernel from blocking us
 	 * in ttioct() in /sys/tty.c.
 	 */
-	(void) signal(SIGTTOU, SIG_IGN);
+	sa.sa_handler = SIG_IGN;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGTTOU, &sa, NULL);
 #endif
 
-	(void) signal(SIGCHLD, cleanup);
+	sa.sa_handler = cleanup;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGCHLD, &sa, NULL);
 
 #if	defined(CRAY2) && defined(UNICOS5)
 	/*
 	 * Cray-2 will send a signal when pty modes are changed by slave
 	 * side.  Set up signal handler now.
 	 */
-	if ((int)signal(SIGUSR1, termstat) < 0)
-		perror("signal");
+	sa.sa_handler = termstat;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	if (sigaction(SIGUSR1, &sa, NULL) < 0)
+		perror("sigaction");
 	else if (ioctl(p, TCSIGME, (char *)SIGUSR1) < 0)
 		perror("ioctl:TCSIGME");
 	/*

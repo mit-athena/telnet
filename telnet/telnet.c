@@ -139,8 +139,8 @@ unsigned char telopt_environ = TELOPT_NEW_ENVIRON;
 # define telopt_environ TELOPT_NEW_ENVIRON
 #endif
 
-jmp_buf	toplevel = { 0 };
-jmp_buf	peerdied;
+sigjmp_buf	toplevel = { 0 };
+sigjmp_buf	peerdied;
 
 int	flushline;
 int	linemode;
@@ -1498,7 +1498,7 @@ slc_add_reply(func, flags, value)
 		*slc_replyp++ = IAC;
 	if ((*slc_replyp++ = flags) == IAC)
 		*slc_replyp++ = IAC;
-	if ((*slc_replyp++ = (unsigned char)value) == IAC)
+	if ((unsigned char)(*slc_replyp++ = value) == IAC)
 		*slc_replyp++ = IAC;
 }
 
@@ -2221,6 +2221,7 @@ Scheduler(block)
 		 */
     int returnValue;
     int netin, netout, netex, ttyin, ttyout;
+    struct sigaction sa;
 
     /* Decide which rings should be processed */
 
@@ -2252,7 +2253,10 @@ Scheduler(block)
 #   if defined(TN3270) && defined(unix)
     if (HaveInput) {
 	HaveInput = 0;
-	(void) signal(SIGIO, inputAvailable);
+	sa.sa_handler = inputAvailable;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGIO, &sa, NULL);
     }
 #endif	/* defined(TN3270) && defined(unix) */
 

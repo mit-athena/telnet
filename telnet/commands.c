@@ -1462,7 +1462,7 @@ bye(argc, argv)
 #endif	/* defined(TN3270) */
     }
     if ((argc != 2) || (strcmp(argv[1], "fromquit") != 0)) {
-	longjmp(toplevel, 1);
+	siglongjmp(toplevel, 1);
 	/* NOTREACHED */
     }
     return 1;			/* Keep lint, etc., happy */
@@ -2465,7 +2465,7 @@ tn(argc, argv)
 	env_export((unsigned char *)"USER");
     }
     (void) call(status, "status", "notmuch", 0);
-    if (setjmp(peerdied) == 0)
+    if (sigsetjmp(peerdied, 1) == 0)
 	telnet(user);
     (void) NetClose(net);
     ExitString("Connection closed by foreign host.\n",1);
@@ -2594,14 +2594,18 @@ command(top, tbuf, cnt)
     int cnt;
 {
     register Command *c;
+    struct sigaction sa;
 
     setcommandmode();
     if (!top) {
 	putchar('\n');
 #if	defined(unix)
     } else {
-	(void) signal(SIGINT, SIG_DFL);
-	(void) signal(SIGQUIT, SIG_DFL);
+	sa.sa_handler = SIG_DFL;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGINT, &sa, NULL);
+	sigaction(SIGQUIT, &sa, NULL);
 #endif	/* defined(unix) */
     }
     for (;;) {
@@ -2655,7 +2659,7 @@ command(top, tbuf, cnt)
     }
     if (!top) {
 	if (!connected) {
-	    longjmp(toplevel, 1);
+	    siglongjmp(toplevel, 1);
 	    /*NOTREACHED*/
 	}
 #if	defined(TN3270)

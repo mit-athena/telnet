@@ -1198,6 +1198,7 @@ cleanopen(line)
 	char *line;
 {
 	register int t;
+	struct sigaction sa;
 #if	defined(_SC_CRAY_SECURE_SYS)
 	struct secstat secbuf;
 #endif	/* _SC_CRAY_SECURE_SYS */
@@ -1244,9 +1245,13 @@ cleanopen(line)
 	 * ourselves.
 	 */
 # if !(defined(CRAY) || defined(__hpux)) && (BSD <= 43) && !defined(STREAMSPTY)
-	(void) signal(SIGHUP, SIG_IGN);
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sa.sa_handler = SIG_IGN;
+	sigaction(SIGHUP, &sa, NULL);
 	vhangup();
-	(void) signal(SIGHUP, SIG_DFL);
+	sa.sa_handler = SIG_DFL;
+	sigaction(SIGHUP, &sa, NULL);
 	t = open(line, O_RDWR|O_NOCTTY);
 	if (t < 0)
 		return(-1);
@@ -1254,9 +1259,13 @@ cleanopen(line)
 # if	defined(CRAY) && defined(TCVHUP)
 	{
 		register int i;
-		(void) signal(SIGHUP, SIG_IGN);
+		sigemptyset(&sa.sa_mask);
+		sa.sa_flags = 0;
+		sa.sa_handler = SIG_IGN;
+		sigaction(SIGHUP, &sa, NULL);
 		(void) ioctl(t, TCVHUP, (char *)0);
-		(void) signal(SIGHUP, SIG_DFL);
+		sa.sa_handler = SIG_DFL;
+		sigaction(SIGHUP, &sa, NULL);
 		setpgrp();
 
 #if		defined(_SC_CRAY_SECURE_SYS)
@@ -1428,7 +1437,10 @@ startslave(host, autologin, autoname)
 			(void) close(i);
 		}
 #ifdef	CRAY
-		(void) signal(WJSIGNAL, sigjob);
+		sa.sa_handler = sigjob;
+		sigemptyset(&sa.sa_mask);
+		sa.sa_flags = 0;
+		sigaction(WJSIGNAL, &sa, NULL);
 #endif
 		utmp_sig_notify(pid);
 # endif	/* PARENT_DOES_UTMP */
@@ -1473,7 +1485,10 @@ startslave(host, autologin, autoname)
 		fatalperror(net, tbuf);
 	}
 	(void) close(i);
-	(void) signal(SIGALRM, nologinproc);
+	sa.sa_handler = nologinproc;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGHUP, &sa, NULL);
 	for (i = 0; ; i++) {
 		char tbuf[128];
 		alarm(15);
@@ -1488,7 +1503,10 @@ startslave(host, autologin, autoname)
 		fatal(net, "/etc/init didn't start login process");
 	pcc += n;
 	alarm(0);
-	(void) signal(SIGALRM, SIG_DFL);
+	sa.sa_handler = SIG_DFL;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGALRM, &sa, NULL);
 
 	return;
 #endif	/* NEWINIT */
@@ -1918,31 +1936,35 @@ cleanup(sig)
  *	utmp_sig_wait(), until the server calls utmp_sig_notify() and
  *	signals the future-login shell to proceed.
  */
-static int caught=0;		/* NZ when signal intercepted */
-static void (*func)();		/* address of previous handler */
+static int caught=0;			/* NZ when signal intercepted */
+static struct sigaction oldaction;	/* previous signal handler */
 
 	void
 _utmp_sig_rcv(sig)
 	int sig;
 {
+	struct sigaction sa;
+
 	caught = 1;
-	(void) signal(SIGUSR1, func);
+	sigaction(SIGUSR1, &oldaction, NULL);
 }
 
 	void
 utmp_sig_init()
 {
-	/*
-	 * register signal handler for UTMP creation
-	 */
-	if ((int)(func = signal(SIGUSR1, _utmp_sig_rcv)) == -1)
-		fatalperror(net, "telnetd/signal");
+	struct sigaction sa, old;
+
+	sa.sa_handler = _utmp_sig_rcv;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	if (sigaction(SIGUSR1, &sa, &oldaction) < 0)
+		fatalperror(net, "telnetd/sigaction");
 }
 
 	void
 utmp_sig_reset()
 {
-	(void) signal(SIGUSR1, func);	/* reset handler to default */
+	sigaction(SIGUSR1, &oldaction, NULL);
 }
 
 # ifndef CRAY

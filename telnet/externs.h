@@ -248,7 +248,7 @@ extern unsigned char
 extern void
     SetNetTrace P((char *));	/* Function to change where debugging goes */
 
-extern jmp_buf
+extern sigjmp_buf
     peerdied,
     toplevel;		/* For error conditions. */
 

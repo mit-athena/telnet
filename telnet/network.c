@@ -153,7 +153,7 @@ netflush()
 	    perror(hostname);
 	    (void)NetClose(net);
 	    ring_clear_mark(&netoring);
-	    longjmp(peerdied, -1);
+	    siglongjmp(peerdied, -1);
 	    /*NOTREACHED*/
 	}
 	n = 0;

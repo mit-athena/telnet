@@ -362,14 +362,14 @@ main(argc, argv)
 			*argp++ = argv[1];	/* port */
 		*argp = 0;
 
-		if (setjmp(toplevel) != 0)
+		if (sigsetjmp(toplevel, 1) != 0)
 			Exit(0);
 		if (tn(argp - args, args) == 1)
 			return (0);
 		else
 			return (1);
 	}
-	(void)setjmp(toplevel);
+	(void)sigsetjmp(toplevel, 1);
 	for (;;) {
 #ifdef TN3270
 		if (shell_active)
