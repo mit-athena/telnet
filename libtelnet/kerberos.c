@@ -61,6 +61,7 @@ static char sccsid[] = "@(#)kerberos.c	8.1 (Berkeley) 6/4/93";
 #include <stdio.h>
 #include <des.h>        /* BSD wont include this in krb.h, so we do it here */
 #include <krb.h>
+#include <krb_err.h>
 #ifdef	__STDC__
 #include <stdlib.h>
 #endif
@@ -111,6 +112,8 @@ static Block	session_key	= { 0 };
 static Schedule sched;
 static Block	challenge	= { 0 };
 #endif	/* ENCRYPTION */
+
+struct sockaddr_in *PeerName = NULL;
 
 #ifdef ATHENA_LOGIN
 static int DidStartUser=0;
@@ -317,9 +320,12 @@ kerberos4_is(ap, data, cnt)
 	char realm[REALM_SZ];
 	char instance[INST_SZ];
 	int r;
+	long from_addr = 0;
 
 	if (cnt-- < 1)
 		return;
+	if (PeerName)
+	    from_Addr = PereName->sin_addr.s_addr;
 	switch (*data++) {
 	case KRB_AUTH:
 		if (krb_get_lrealm(realm, 1) != KSUCCESS) {
@@ -338,7 +344,7 @@ kerberos4_is(ap, data, cnt)
 		}
 		instance[0] = '*'; instance[1] = 0;
 		if (r = krb_rd_req(&auth, KRB_SERVICE_NAME,
-				   instance, 0, &adat, "")) {
+				   instance, from_addr, &adat, "")) {
 			if (auth_debug_mode)
 				printf("Kerberos failed him as %s\r\n", name);
 			Data(ap, KRB_REJECT, (void *)krb_err_txt[r], -1);
