@@ -2,13 +2,15 @@
  * Imakefile for Athenized Kerberized telnet
  *
  * $Author: cfields $
- * $Id: Imakefile,v 1.4 1996-06-23 21:52:15 cfields Exp $
+ * $Id: Imakefile,v 1.5 1996-06-26 20:47:48 cfields Exp $
  *
  * Copyright 1994 by the Massachusetts Institute of Technology.
  * For copying and distribution information, see the file
  * "mit-copyright.h".
  *
  */
+
+#define ISUBDIRS tmac
 
 #ifdef ultrix
 PLATFORM=athena_ultrix.auth
