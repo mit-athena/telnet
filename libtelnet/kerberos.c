@@ -245,7 +245,7 @@ kerberos4_send(ap)
 		return(0);
 	}
 
-	bzero(instance, sizeof(instance));
+	memset(instance, 0, sizeof(instance));
 
 	if (realm = krb_get_phost(RemoteHostName))
 		strncpy(instance, realm, sizeof(instance));
@@ -346,7 +346,7 @@ kerberos4_is(ap, data, cnt)
 				printf("No local realm\r\n");
 			return;
 		}
-		bcopy((void *)data, (void *)auth.dat, auth.length = cnt);
+		memcpy(auth.dat, data, auth.length = cnt);
 		if (auth_debug_mode) {
 			printf("Got %d bytes of authentication data\r\n", cnt);
 			printf("CK: %d:", kerberos4_cksum(auth.dat, auth.length));
@@ -364,7 +364,7 @@ kerberos4_is(ap, data, cnt)
 			return;
 		}
 #ifdef	ENCRYPTION
-		bcopy((void *)adat.session, (void *)session_key, sizeof(Block));
+		memcpy(session_key, adat.session, sizeof(Block));
 #endif	/* ENCRYPTION */
 		krb_kntoln(&adat, name);
 
@@ -396,7 +396,7 @@ kerberos4_is(ap, data, cnt)
 		 */
 		des_init_random_number_generator(session_key);
 		des_key_sched(session_key, sched);
-		bcopy((void *)data, (void *)datablock, sizeof(Block));
+		memcpy(datablock, data, sizeof(Block));
 		/*
 		 * Take the received encrypted challenge, and encrypt
 		 * it again to get a unique session_key for the
