@@ -80,7 +80,7 @@ int	require_SecurID = 0;
 #endif
 
 extern	int utmp_len;
-int	registerd_host_only = 0;
+int	registered_host_only = 0;
 
 #ifdef	STREAMSPTY
 # include <stropts.h>
@@ -352,7 +352,7 @@ main(argc, argv)
 			break;
 
 		case 'U':
-			registerd_host_only = 1;
+			registered_host_only = 1;
 			break;
 
 #ifdef	AUTHENTICATION
@@ -768,8 +768,8 @@ terminaltypeok(s)
 #define	MAXHOSTNAMELEN 64
 #endif	/* MAXHOSTNAMELEN */
 
-char *hostname;
-char host_name[MAXHOSTNAMELEN];
+char *hostname, *dnsrealm, *remote_dnsrealm;
+char host_name[MAXHOSTNAMELEN], dns_realm[MAXHOSTNAMELEN];
 char remote_host_name[MAXHOSTNAMELEN];
 
 #ifndef	convex
@@ -830,14 +830,37 @@ doit(who)
 	}
 #endif	/* _SC_CRAY_SECURE_SYS */
 
+	/* get server hostname and DNS realm */
+	(void) gethostname(host_name, sizeof (host_name));
+	hostname = host_name;
+	hp = gethostbyname(hostname);
+	if (hp) {
+		dnsrealm = strchr(hp->h_name, '.');
+		if (dnsrealm) {
+			strcpy(dns_realm, dnsrealm);
+			dnsrealm = dns_realm;
+		}
+	}
+
 	/* get name of connected client */
 	hp = gethostbyaddr((char *)&who->sin_addr, sizeof (struct in_addr),
 		who->sin_family);
 
-	if (hp == NULL && registerd_host_only) {
+	if (hp == NULL && registered_host_only) {
 		fatal(net, "Couldn't resolve your address into a host name.\r\n\
          Please contact your net administrator");
-	} else if (hp &&
+		/*NOTREACHED*/
+	}
+
+	/* cut realm off hostname if it's the same as server's realm */
+	if (hp && dnsrealm) {
+		remote_dnsrealm= strchr(hp->h_name, '.');
+		if (remote_dnsrealm && !strcmp(dnsrealm, remote_dnsrealm))
+			*remote_dnsrealm = '\0';
+	}
+
+	/* make sure hostname fits in utmp entry */
+	if (hp &&
 	    (strlen(hp->h_name) <= ((utmp_len < 0) ? -utmp_len : utmp_len))) {
 		host = hp->h_name;
 	} else {
@@ -850,9 +873,6 @@ doit(who)
 	strncpy(remote_host_name, host, sizeof(remote_host_name)-1);
 	remote_host_name[sizeof(remote_host_name)-1] = 0;
 	host = remote_host_name;
-
-	(void) gethostname(host_name, sizeof (host_name));
-	hostname = host_name;
 
 #if	defined(AUTHENTICATION) || defined(ENCRYPTION)
 	auth_encrypt_init(hostname, host, "TELNETD", 1);
