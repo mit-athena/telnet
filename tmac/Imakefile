@@ -10,6 +10,7 @@ create_dir(${ATHLIBDIR}/tmac)
 
 install::
 	for i in ${MSRCS}; do \
+		rm -f ${DESTDIR}${ATHLIBDIR}/tmac/tmac.$$i; \
 		sed -f strip.sed < $$i > ${DESTDIR}${ATHLIBDIR}/tmac/tmac.$$i; \
 		chmod 444 ${DESTDIR}${ATHLIBDIR}/tmac/tmac.$$i; \
 	done
