@@ -57,12 +57,13 @@
 # ifndef __ENCRYPTION__
 # define __ENCRYPTION__
 
+#include <des.h>
+
 #define	DIR_DECRYPT		1
 #define	DIR_ENCRYPT		2
 
-typedef	unsigned char Block[8];
-typedef unsigned char *BlockT;
-typedef struct { Block _; } Schedule[16];
+typedef des_cblock Block;
+typedef des_key_schedule Schedule;
 
 #define	VALIDKEY(key)	( key[0] | key[1] | key[2] | key[3] | \
 			  key[4] | key[5] | key[6] | key[7])
