@@ -35,6 +35,12 @@
 static char sccsid[] = "@(#)sys_term.c	8.1 (Berkeley) 6/4/93";
 #endif /* not lint */
 
+#if defined(SOLARIS) && defined(LINEMODE)
+#include <sys/tty.h>
+#include <sys/ptyvar.h>
+#include <sys/strtty.h>
+#endif /* SOLARIS && LINEMODE */
+
 #include "telnetd.h"
 #include "pathnames.h"
 
@@ -42,7 +48,11 @@ static char sccsid[] = "@(#)sys_term.c	8.1 (Berkeley) 6/4/93";
 #include <libtelnet/auth.h>
 #endif
 
-#if defined(CRAY) || defined(__hpux)
+#if defined (_AIX)
+#define vhangup()
+#endif
+
+#if defined(CRAY) || defined(__hpux) || defined(_AIX)
 # define PARENT_DOES_UTMP
 #endif
 
@@ -59,12 +69,8 @@ struct	utmp wtmp;
 # endif /* UTMPX */
 
 int	utmp_len = sizeof(wtmp.ut_host);
-# ifndef PARENT_DOES_UTMP
 char	wtmpf[]	= "/usr/adm/wtmp";
 char	utmpf[] = "/etc/utmp";
-# else /* PARENT_DOES_UTMP */
-char	wtmpf[]	= "/etc/wtmp";
-# endif /* PARENT_DOES_UTMP */
 
 # ifdef CRAY
 #include <tmpdir.h>
@@ -118,7 +124,7 @@ extern struct sysv sysv;
 #undef	t_flushc
 #undef	t_werasc
 #undef	t_lnextc
-#endif
+#endif /* STREAMS */
 
 #if defined(UNICOS5) && defined(CRAY2) && !defined(EXTPROC)
 # define EXTPROC 0400
@@ -462,12 +468,8 @@ getnpty()
  *
  * Returns the file descriptor of the opened pty.
  */
-#ifndef	__GNUC__
-char *line = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
-#else
 static char Xline[] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 char *line = Xline;
-#endif
 #ifdef	CRAY
 char *myline = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 #endif	/* CRAY */
@@ -608,14 +610,15 @@ int *ptynum;
  * tty_rspeed(val)	Set receive speed to val.
  */
 
-#ifdef convex
+#if (defined(convex)) || (!defined(USE_TERMIO) && defined(ultrix))
+#define USE_LINESTATE;
 static int linestate;
 #endif
 
 	int
 tty_linemode()
 {
-#ifndef convex
+#ifndef USE_LINESTATE
 #ifndef	USE_TERMIO
 	return(termbuf.state & TS_EXTPROC);
 #else
@@ -631,7 +634,7 @@ tty_setlinemode(on)
 	int on;
 {
 #ifdef	TIOCEXT
-# ifndef convex
+# ifndef USE_LINESTATE
 	set_termbuf();
 # else
 	linestate = on;
@@ -1280,7 +1283,9 @@ login_tty(t)
 		 */
 		if ((setpgrp(0, 0) < 0) || (setsid() < 0))
 #endif
+#if !defined(_AIX) && !defined(SOLARIS)
 			fatalperror(net, "setsid()");
+#endif
 	}
 # ifdef	TIOCSCTTY
 	if (ioctl(t, TIOCSCTTY, (char *)0) < 0)
@@ -1400,6 +1405,7 @@ startslave(host, autologin, autoname)
 		utmp_sig_notify(pid);
 # endif	/* PARENT_DOES_UTMP */
 	} else {
+		(void) setsid();
 		getptyslave(autologin);
 		start_login(host, autologin, autoname);
 		/*NOTREACHED*/
@@ -1866,7 +1872,7 @@ utmp_sig_reset()
 	(void) signal(SIGUSR1, func);	/* reset handler to default */
 }
 
-# ifdef __hpux
+# ifndef CRAY
 # define sigoff() /* do nothing */
 # define sigon() /* do nothing */
 # endif
@@ -2050,7 +2056,7 @@ rmut()
 }  /* end of rmut */
 #endif
 
-#if	!defined(UTMPX) && !(defined(CRAY) || defined(__hpux)) && BSD <= 43
+#if	!defined(UTMPX) && !defined(_AIX) && !(defined(CRAY) || defined(__hpux)) && BSD <= 43
 	void
 rmut()
 {
@@ -2103,7 +2109,7 @@ rmut()
 }  /* end of rmut */
 #endif	/* CRAY */
 
-#ifdef __hpux
+#if defined(__hpux) || defined(_AIX)
 rmut (line)
 char *line;
 {
