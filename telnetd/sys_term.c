@@ -1773,15 +1773,11 @@ start_login(host, autologin, name)
 			if (!weak_telnet_key)
 				printf("What you type is protected by encryption.\r\n");
 # ifdef ATHENA_LOGIN
-			else
-			  {
-			    if (time(0) >  790362001) {
-			      printf("You must update your telnet client.\r\n");
-			      AthenaLoginCleanup();
-			      exit(1);
-			    }
-			    else printf("Continuing with INSECURE encryption.\r\n");
-			  }
+			else {
+				printf("You must update your telnet client.\r\n");
+				AthenaLoginCleanup();
+				exit(1);
+			}
 # endif /* ATHENA_LOGIN */
 		}
 		else {
@@ -1793,6 +1789,14 @@ start_login(host, autologin, name)
 # endif /* ATHENA_LOGIN */
 		}
 	}
+# ifdef ATHENA_LOGIN
+	else {
+		if (decrypt_input)
+			printf("What you type is protected by encryption.\r\n");
+		else
+			printf("Warning: this session is NOT encrypted!\r\n");
+	}
+# endif /* ATHENA_LOGIN */
 #endif /* defined(AUTHENTICATION) && defined(ENCRYPTION) */
         execv(path_login, argv);
 	syslog(LOG_ERR, "%s: %m\n", path_login);
