@@ -2,7 +2,7 @@
  * Imakefile for Athenized Kerberized telnet
  *
  * $Author: brlewis $
- * $Id: Imakefile,v 1.1 1994-04-08 10:19:47 brlewis Exp $
+ * $Id: Imakefile,v 1.2 1994-05-12 15:55:59 brlewis Exp $
  *
  * Copyright 1994 by the Massachusetts Institute of Technology.
  * For copying and distribution information, see the file
@@ -31,3 +31,11 @@ all::
 	cd libtelnet; make ${PLATFORM} CC="${CC}"
 	cd telnet; make ${PLATFORM} CC="${CC}"
 	cd telnetd; make ${PLATFORM} CC="${CC}"
+
+install_program(telnetd/telnetd,,${ATHRETCDIR})
+
+install_program(telnet/telnet,,${ATHBINDIR})
+
+install_man(telnetd/telnetd.8,telnetd.8)
+
+install_man(telnet/telnet.1,telnet.1)
