@@ -20,7 +20,7 @@ athena_solaris:
 athena_solaris.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
 		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb4 -ldes425 -lkrb5 -lcrypto -lcom_err -lhesiod -lnsl -lsocket -lresolv" \
-		AUTH_INC=-I${ATHTOOLROOT}/usr/athena/include \
+		AUTH_INC="-I${ATHTOOLROOT}/usr/athena/include -I${ATHTOOLROOT}/usr/athena/include/kerberosIV" \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
 
 athena_aix:
@@ -45,7 +45,7 @@ athena_aix:
 athena_aix.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
 		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb4 -ldes425 -lkrb5 -lcrypto -lcom_err -lhesiod" \
-		AUTH_INC=-I${ATHTOOLROOT}/usr/athena/include \
+		AUTH_INC="-I${ATHTOOLROOT}/usr/athena/include -I${ATHTOOLROOT}/usr/athena/include/kerberosIV" \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
 
 athena_ultrix:
@@ -58,7 +58,7 @@ athena_ultrix:
 	-DDEFAULT_IM='\"\r\nMIT Athena (%h/Ultrix) (%t)\r\n\r\r\n\r\"' \
 			-DKLUDGELINEMODE -DDIAGNOSTICS \
 			-DENV_HACK -DOLD_ENVIRON ${AUTH_DEF}" \
-		INCLUDES="-I.. -I${ATHTOOLROOT}/usr/athena/include" \
+		INCLUDES="-I.. -I${ATHTOOLROOT}/usr/athena/include -I${ATHTOOLROOT}/usr/athena/include/kerberosIV" \
 		LIB_OBJ="getent.o strdup.o" \
 		LIB_SRC="getent.c strdup.c" \
 		AR=ar ARFLAGS=cq RANLIB=ranlib \
@@ -80,7 +80,7 @@ athena_hpux:
 	-DDEFAULT_IM='\"\r\nMIT Athena (%h/HP-UX) (%t)\r\n\r\r\n\r\"' \
 			-DNO_LOGIN_F -DNO_LOGIN_P -DNO_LOGIN_H \
 			-DDIAGNOSTICS -DLOGIN_ARGS ${AUTH_DEF}" \
-		INCLUDES="-I.. -I${ATHTOOLROOT}/usr/athena/include" \
+		INCLUDES="-I.. -I${ATHTOOLROOT}/usr/athena/include -I${ATHTOOLROOT}/usr/athena/include/kerberosIV" \
 		LIB_OBJ="getent.o setenv.o" \
 		LIB_SRC="getent.c setenv.c" \
 		AR=ar ARFLAGS=cq RANLIB=NONE \
@@ -137,7 +137,7 @@ athena_osf1:
 athena_osf1.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
 		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb4 -ldes425 -lkrb5 -lcrypto -lcom_err -lhesiod" \
-		AUTH_INC=-I${ATHTOOLROOT}/usr/athena/include \
+		AUTH_INC="-I${ATHTOOLROOT}/usr/athena/include -I${ATHTOOLROOT}/usr/athena/include/kerberosIV" \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
 
 
@@ -162,5 +162,5 @@ athena_irix:
 athena_irix.auth:
 	make -f ../Config.local `basename $@ .auth` WHAT=${WHAT} \
 		AUTH_LIB="-L${ATHTOOLROOT}/usr/athena/lib -lAL -lkrb4 -ldes425 -lkrb5 -lcrypto -lcom_err -lhesiod" \
-		AUTH_INC=-I${ATHTOOLROOT}/usr/athena/include \
+		AUTH_INC="-I${ATHTOOLROOT}/usr/athena/include -I${ATHTOOLROOT}/usr/athena/include/kerberosIV" \
 		AUTH_DEF="-DAUTHENTICATION -DENCRYPTION -DKRB4 -DDES_ENCRYPTION -DATHENA_LOGIN"
