@@ -43,6 +43,7 @@ static char sccsid[] = "@(#)telnetd.c	8.1 (Berkeley) 6/4/93";
 
 #include "telnetd.h"
 #include "pathnames.h"
+#include <signal.h>
 
 #if	defined(_SC_CRAY_SECURE_SYS) && !defined(SCM_SECURITY)
 /*
